@@ -10,20 +10,20 @@ namespace HRManagementSystem.Domain.Entities
 {
     public class Employee
     {
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         // Basic Info
         public FullName FullName { get; private set; }
         public ContactInfo ContactInfo { get; private set; }
         public Address Address { get; private set; }
-        public NationalIdentity NationalId { get; private set; }
+        public NationalIdentity NationalId { get;private set; }
 
         public Gender Gender { get; private set; }
 
         // Employment Details
         public DateTime DateOfBirth { get; private set; }
         public DateTime HireDate { get; private set; }
-        public string JobTitle { get; private set; } = string.Empty;
+        public string JobTitle { get; private set; } = "Unknown";
         public Money Salary { get; private set; }
         public EmploymentStatus Status { get; private set; } = EmploymentStatus.Active;
         public JobLevel JobLevel { get; private set; }
@@ -37,12 +37,19 @@ namespace HRManagementSystem.Domain.Entities
         // Extras
         public string? ProfileImagePath { get; private set; }
 
+        public int Age => CalculateAge(DateOfBirth);
         // Business logic
         public void Terminate() => Status = EmploymentStatus.Terminated;
         public void Activate() => Status = EmploymentStatus.Active;
         public void SetOnLeave() => Status = EmploymentStatus.OnLeave;
         public void Resign() => Status = EmploymentStatus.Resigned;
 
+        public void UpdateFullName(FullName newFullName)
+        {
+            if (newFullName is null)
+                throw new ArgumentNullException(nameof(newFullName), "Full name cannot be null.");
+            FullName = newFullName;
+        }
         public void ChangeJobTitle(string newTitle)
         {
             if (newTitle.Length < 3)
@@ -63,7 +70,7 @@ namespace HRManagementSystem.Domain.Entities
         {
             if (DepartmentId == 0)
                 throw new InvalidOperationException("Employee is not assigned to any department.");
-            DepartmentId = 0;
+            DepartmentId = 2;
         }
 
 
@@ -74,6 +81,12 @@ namespace HRManagementSystem.Domain.Entities
 
             Address = newAddress;
         }
+        public void UpdateNationalId(NationalIdentity newNationalId)
+        {
+            if (newNationalId is null)
+                throw new ArgumentNullException(nameof(newNationalId), "National ID cannot be null.");
+            NationalId = newNationalId;
+        }
 
         public void UpdateContactInfo(ContactInfo newContactInfo)
         {
@@ -82,20 +95,41 @@ namespace HRManagementSystem.Domain.Entities
 
             ContactInfo = newContactInfo;
         }
+        public void SetSalary(Money newSalary)
+        {
+            if (newSalary == null)
+                throw new ArgumentNullException(nameof(newSalary));
+            if (newSalary.Amount <= 0)
+                throw new ArgumentException("Salary must be greater than zero.", nameof(newSalary));
 
+            Salary = newSalary;
+        }
         public void AdjustSalary(Money amount, bool increase = true)
         {
             if (amount == null)
                 throw new ArgumentNullException(nameof(amount));
-
             if (amount.Amount <= 0)
                 throw new ArgumentException("Salary adjustment amount must be greater than zero.", nameof(amount));
 
-            Salary = increase 
-                ? Salary.Add(amount) 
-                : Salary.Subtract(amount);
+            Salary = increase ? Salary.Add(amount) : Salary.Subtract(amount);
         }
 
+        public void UpdateContractDetails(ContractDetails newContract)
+        {
+            if (newContract == null) throw new ArgumentNullException(nameof(newContract));
+            ContractDetails = newContract;
+        }
+
+        public void UpdateBankAccount(BankAccount newAccount)
+        {
+            if (newAccount == null) throw new ArgumentNullException(nameof(newAccount));
+            BankAccount = newAccount;
+        }
+        public void UpdateProfileImagePath(string profileImagePath)
+        {
+            if (profileImagePath == null) throw new ArgumentNullException(nameof(profileImagePath));
+            ProfileImagePath = profileImagePath;
+        }
         public void Promote()
         {
             if (JobLevel == JobLevel.Director)
@@ -110,6 +144,14 @@ namespace HRManagementSystem.Domain.Entities
             JobLevel--;
         }
 
+        private static int CalculateAge(DateTime dob)
+        {
+            var today = DateTime.Today;
+            int age = today.Year - dob.Year;
+            if (dob.Date > today.AddYears(-age)) age--;
+            return age;
+        }
+
         public static Employee CreateNew(
     FullName fullName,
     ContactInfo contactInfo,
@@ -121,15 +163,10 @@ namespace HRManagementSystem.Domain.Entities
     ContractDetails contractDetails,
     BankAccount bankAccount)
         {
-            if (dateOfBirth > DateTime.UtcNow)
+            if (dateOfBirth > DateTime.Today)
                 throw new ArgumentException("Date of birth cannot be in the future.", nameof(dateOfBirth));
 
-            var today = DateTime.Today;
-            int age = today.Year - dateOfBirth.Year;
-            if (dateOfBirth.Date > today.AddYears(-age))
-                age--;
-
-            if (age < 18)
+            if (CalculateAge(dateOfBirth) < 18)
                 throw new ArgumentException("Employee must be at least 18 years old.", nameof(dateOfBirth));
 
             if (startingSalary.Amount <= 0)
@@ -157,6 +194,7 @@ namespace HRManagementSystem.Domain.Entities
                 JobLevel = JobLevel.Junior
             };
         }
+        private Employee() { }
 
 
     }

@@ -19,7 +19,9 @@ namespace HRManagementSystem.Application.DTOs.Employee
         public string? EmergencyContactPhone { get; set; }
 
         // Address & Identity
-        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? Street { get; private set; }
+        public string? BuildingNumber { get; private set; }
         public string? NationalId { get; set; }
 
         // Employment Details
@@ -29,8 +31,8 @@ namespace HRManagementSystem.Application.DTOs.Employee
         public string? JobLevel { get; set; }
 
         // Contract Details
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTime? ContractEndDate { get; set; }
+        public DateTime? ContractStartDate { get; set; }
         public string? ContractType { get; set; }
 
         // Bank Info
@@ -39,10 +41,12 @@ namespace HRManagementSystem.Application.DTOs.Employee
         public string? IBAN { get; set; }
 
         // Organization Info
-        public int? DepartmentId { get; set; }
+        public int DepartmentId { get; set; }
 
         // Financial Info
         public decimal? Salary { get; set; }
+        public string? SalaryCurrancy { get; set; } = string.Empty;
+
 
         // Extra
         public string? ProfileImagePath { get; set; }

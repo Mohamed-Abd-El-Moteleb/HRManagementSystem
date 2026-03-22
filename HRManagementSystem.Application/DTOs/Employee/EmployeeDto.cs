@@ -16,5 +16,6 @@ namespace HRManagementSystem.Application.DTOs.Employee
         public string Gender { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
         public string EmploymentStatus { get; set; } = string.Empty;
+        public string SalaryCurrancy { get; set; } = string.Empty;
     }
 }

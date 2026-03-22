@@ -1,0 +1,35 @@
+﻿using HRManagementSystem.Application.Interfaces.Repositories;
+using HRManagementSystem.Infrastructure.Data.Context;
+using System;
+using System.Threading.Tasks;
+
+namespace HRManagementSystem.Infrastructure.UnitOfWork
+{
+    public class UnitOfWork : IUnitOfWork, IDisposable
+    {
+        private readonly AppDbContext _context;
+
+        public IEmployeeRepository Employees { get; }
+        public IDepartmentRepository Departments { get; }
+
+        public UnitOfWork(
+            AppDbContext context,
+            IEmployeeRepository employeeRepository,
+            IDepartmentRepository departmentRepository)
+        {
+            _context = context;
+            Employees = employeeRepository;
+            Departments = departmentRepository;
+        }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
+    }
+}

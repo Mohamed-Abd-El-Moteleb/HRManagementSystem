@@ -12,7 +12,7 @@ namespace HRManagementSystem.Application.Interfaces.Services
         Task<IEnumerable<EmployeeDto>> GetAllAsync();
         Task<EmployeeDetailsDto> GetByIdAsync(int id);
         Task CreateAsync(CreateEmployeeDto dto);
-        Task UpdateAsync(UpdateEmployeeDto dto);
+        Task UpdateAsync(int id,UpdateEmployeeDto dto);
         Task DeleteAsync(int id);
     }
 }

@@ -15,10 +15,10 @@ namespace HRManagementSystem.Domain.ValueObjects
 
         public FullName(string firstName, string lastName)
         {
-            if (string.IsNullOrWhiteSpace(firstName))
-                throw new ArgumentException("First name is required.", nameof(firstName));
-            if (string.IsNullOrWhiteSpace(lastName))
-                throw new ArgumentException("Last name is required.", nameof(lastName));
+            if (string.IsNullOrWhiteSpace(firstName) || firstName.Length < 2)
+                throw new ArgumentException("First name must be at least 2 characters.");
+            if (string.IsNullOrWhiteSpace(lastName) || lastName.Length < 2)
+                throw new ArgumentException("Last name must be at least 2 characters.");
             FirstName = firstName;
             LastName = lastName;
         }

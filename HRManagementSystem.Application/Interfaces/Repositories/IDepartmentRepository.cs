@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,7 +13,9 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
         Task<Department?> GetByIdAsync(int id);
         Task<IEnumerable<Department>> GetAllAsync();
         Task AddAsync(Department department);
-        Task Update(Department department);
-        Task Delete(Department department);
+        void Update(Department department);
+        void Delete(Department department);
+        Task<bool> AnyAsync(Expression<Func<Department, bool>> predicate);
+
     }
 }

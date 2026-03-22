@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using HRManagementSystem.Application.BusinessRules;
 using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Domain.Entities;
+using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,51 +18,201 @@ namespace HRManagementSystem.Application.Services
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly EmployeeBusinessRules _rules;
 
-        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper)
+        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper , IUnitOfWork unitOfWork,EmployeeBusinessRules rules)
         {
             _employeeRepository = employeeRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            _rules= rules;
+        }
+
+        private async Task<Employee> GetEmployeeOrThrowAsync(int id)
+        {
+            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+            if (employee == null)
+                throw new KeyNotFoundException($"Employee with ID {id} not found");
+            return employee;
         }
 
         public async Task<IEnumerable<EmployeeDto>> GetAllAsync()
         {
-            var employees = await _employeeRepository.GetAllAsync();
+            var employees = await _unitOfWork.Employees.GetAllAsync();
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
         }
 
         public async Task<EmployeeDetailsDto> GetByIdAsync(int id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
-            if (employee == null)
-                throw new Exception($"Employee with ID {id} not found");
-
+            var employee = await GetEmployeeOrThrowAsync(id);
             return _mapper.Map<EmployeeDetailsDto>(employee);
         }
 
         public async Task CreateAsync(CreateEmployeeDto dto)
         {
-            var employee = _mapper.Map<Employee>(dto);
-            await _employeeRepository.AddAsync(employee);
+
+
+
+           
+            await _rules.CheckEmailAndNationalIdUniqueAsync(dto.Email, dto.NationalId);
+            var employee = Employee.CreateNew(
+        new FullName(dto.FirstName, dto.LastName),
+        new ContactInfo(dto.Email, dto.PhoneNumber, dto.EmergencyContactName, dto.EmergencyContactPhone),
+        new Address(dto.Street, dto.City, dto.BuildingNumber),
+        new NationalIdentity(dto.NationalId),
+        Enum.Parse<Gender>(dto.Gender),
+        dto.DateOfBirth,
+        new Money(dto.Salary, dto.SalaryCurrancy),
+        new ContractDetails(dto.ContractStartDate, dto.ContractEndDate, Enum.Parse<ContractType>(dto.ContractType)),
+        new BankAccount(dto.BankAccountNumber, dto.BankName, dto.Iban)
+    );
+
+            var validDeptId = await _rules.GetValidDepartmentIdAsync(dto.DepartmentId);
+            employee.AssignToDepartment(validDeptId);
+
+            await _unitOfWork.Employees.AddAsync(employee);
+            await _unitOfWork.SaveChangesAsync();
+
         }
 
-        public async Task UpdateAsync(UpdateEmployeeDto dto)
+        public async Task UpdateAsync(int id, UpdateEmployeeDto dto)
         {
-            var existingEmployee = await _employeeRepository.GetByIdAsync(dto.Id);
-            if (existingEmployee == null)
-                throw new Exception($"Employee with ID {dto.Id} not found");
+            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
 
-            _mapper.Map(dto, existingEmployee);
-            await _employeeRepository.Update(existingEmployee);
+            if (employee == null)
+                throw new InvalidOperationException($"Employee with ID {dto.Id} not found.");
+
+            if (!string.IsNullOrEmpty(dto.Email) || !string.IsNullOrEmpty(dto.NationalId))
+                await _rules.CheckEmailAndNationalIdUniqueAsync(dto.Email, dto.NationalId);
+
+            if (!string.IsNullOrEmpty(dto.FirstName) || !string.IsNullOrEmpty(dto.LastName))
+                employee.UpdateFullName(new FullName(
+                    dto.FirstName ?? employee.FullName.FirstName,
+                    dto.LastName ?? employee.FullName.LastName));
+
+            if (dto.Salary.HasValue)
+                employee.SetSalary(new Money(dto.Salary.Value, dto.SalaryCurrancy ?? employee.Salary.Currency));
+
+            if (dto.DepartmentId > 0)
+            {
+                var validDeptId = await _rules.GetValidDepartmentIdAsync(dto.DepartmentId);
+                employee.AssignToDepartment(validDeptId);
+            }
+
+            if (!string.IsNullOrEmpty(dto.Email) || !string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                employee.UpdateContactInfo(new ContactInfo(
+                    dto.Email ?? employee.ContactInfo.Email,
+                    dto.PhoneNumber ?? employee.ContactInfo.PhoneNumber,
+                    dto.EmergencyContactName ?? employee.ContactInfo.EmergencyContactName,
+                    dto.EmergencyContactPhone ?? employee.ContactInfo.EmergencyContactPhone));
+            }
+
+
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
-            if (employee == null)
-                throw new Exception($"Employee with ID {id} not found");
+            var employee = await GetEmployeeOrThrowAsync(id);
+            _unitOfWork.Employees.Delete(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
-            await _employeeRepository.Delete(employee);
+        public async Task PromoteAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.Promote();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task DemoteAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.Demote();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task TerminateAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.Terminate();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ActivateAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.Activate();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task SetOnLeaveAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.SetOnLeave();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ResignAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.Resign();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ChangeJobTitleAsync(int id,string jobTitle)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.ChangeJobTitle(jobTitle);
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task AssignToDepartmentAsync(int id, int departmentId)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.AssignToDepartment(departmentId);
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task UnassignFromDepartmentAsync(int id)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.UnassignFromDepartment();
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task UpdateAddressAsync(int id, Address address)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.UpdateAddress(address);
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task UpdateContactInfoAsync(int id, ContactInfo contactInfo)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.UpdateContactInfo(contactInfo);
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task AdjustSalaryAsync(int id, Money money, bool increase = true)
+        {
+            var employee = await GetEmployeeOrThrowAsync(id);
+            employee.AdjustSalary(money,increase);
+            _unitOfWork.Employees.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
