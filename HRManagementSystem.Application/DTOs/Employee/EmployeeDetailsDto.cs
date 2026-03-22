@@ -46,6 +46,8 @@ namespace HRManagementSystem.Application.DTOs.Employee
 
         // Financial Info
         public decimal Salary { get; set; }
+        public string SalaryCurrancy { get; set; } = string.Empty;
+
 
         // Extra
         public string? ProfileImagePath { get; set; }

@@ -10,18 +10,17 @@ namespace HRManagementSystem.Domain.ValueObjects
     {
         public string BankName { get; private set; }
         public string AccountNumber { get; private set; }
-        public string IBAN { get; private set; }
+        public string? IBAN { get; private set; }
 
         private BankAccount() { }
 
-        public BankAccount(string bankName, string accountNumber, string iban)
+        public BankAccount(string accountNumber, string bankName,  string iban)
         {
             if (string.IsNullOrWhiteSpace(bankName))
                 throw new ArgumentException("Bank name is required.", nameof(bankName));
             if (string.IsNullOrWhiteSpace(accountNumber))
                 throw new ArgumentException("Account number is required.", nameof(accountNumber));
-            if (string.IsNullOrWhiteSpace(iban))
-                throw new ArgumentException("IBAN is required.", nameof(iban));
+       
 
             BankName = bankName;
             AccountNumber = accountNumber;

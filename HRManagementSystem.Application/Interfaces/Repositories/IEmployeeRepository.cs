@@ -12,8 +12,9 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
         Task<Employee?> GetByIdAsync(int id);
         Task<IEnumerable<Employee>> GetAllAsync();
         Task AddAsync(Employee employee);
-        Task Update(Employee employee);
-        Task Delete(Employee employee);
+        void Update(Employee employee);
+        void Delete(Employee employee);
         Task<IEnumerable<Employee>> GetByDepartmentIdAsync(int departmentId);
+        Task<bool> ExistsByEmailOrNationalIdAsync(string email, string nationalId);
     }
 }

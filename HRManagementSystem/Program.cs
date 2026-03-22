@@ -1,4 +1,7 @@
+using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Mappings;
+using HRManagementSystem.Infrastructure.Repositories;
+using HRManagementSystem.Infrastructure.UnitOfWork;
 using HRManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +16,9 @@ namespace HRManagementSystem
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
+             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddAutoMapper(cfg =>
