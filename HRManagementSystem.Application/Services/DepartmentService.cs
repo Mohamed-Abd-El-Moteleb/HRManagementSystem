@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using HRManagementSystem.Application.DTOs.Department;
+using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Application.Interfaces;
 using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Domain.Entities;
+using HRManagementSystem.Domain.Enums;
 
 namespace HRManagementSystem.Application.Services
 {
@@ -37,7 +39,13 @@ namespace HRManagementSystem.Application.Services
             var department = await GetDepartmentOrThrowAsync(id);
             return _mapper.Map<DepartmentDetailsDto>(department);
         }
-
+        public async Task<DepartmentDetailsDto> GetByIdWithDetailsAsync(int id)
+        {
+            var department = await _unitOfWork.Departments.GetByIdWithDetailsAsync(id);
+            if (department == null)
+                throw new Exception($"Department with ID {id} not found");
+            return _mapper.Map<DepartmentDetailsDto>(department);
+        }
         public async Task CreateAsync(CreateDepartmentDto dto)
         {
             var department = _mapper.Map<Department>(dto);
@@ -45,36 +53,39 @@ namespace HRManagementSystem.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(UpdateDepartmentDto dto)
+        public async Task UpdateAsync(int id, UpdateDepartmentDto dto)
         {
-            var department = await GetDepartmentOrThrowAsync(dto.Id);
+            var department = await GetDepartmentOrThrowAsync(id);
             _mapper.Map(dto, department);
             _unitOfWork.Departments.Update(department);
             await _unitOfWork.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<EmployeeDto>> GetEmployeesByDepartmentIdAsync(int departmentId)
+        {
+            await GetDepartmentOrThrowAsync(departmentId);
+
+            var employees = await _unitOfWork.Employees.GetByDepartmentIdAsync(departmentId);
+
+            return _mapper.Map<IEnumerable<EmployeeDto>>(employees ?? new List<Employee>());
+        }
+
         public async Task DeleteAsync(int id)
         {
             var department = await GetDepartmentOrThrowAsync(id);
+
+            if(department.Code=="000"||department.Name== "Unassigned")
+                throw new InvalidOperationException("The system default department cannot be deleted.");
+            var hasEmployees = await _unitOfWork.Employees.GetByDepartmentIdAsync(id);
+
+            if (hasEmployees!=null&&hasEmployees.Any())
+                throw new InvalidOperationException("Cannot delete a department that still has employees. Please reassign them first.");
+
             _unitOfWork.Departments.Delete(department);
             await _unitOfWork.SaveChangesAsync();
         }
 
         // --------- Business Operations ---------
-
-        public async Task ActivateAsync(int id)
-        {
-            var department = await GetDepartmentOrThrowAsync(id);
-            department.Activate();
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task DeactivateAsync(int id)
-        {
-            var department = await GetDepartmentOrThrowAsync(id);
-            department.Deactivate();
-            await _unitOfWork.SaveChangesAsync();
-        }
 
         public async Task AssignManagerAsync(int departmentId, int managerId)
         {
@@ -82,9 +93,25 @@ namespace HRManagementSystem.Application.Services
             var manager = await _unitOfWork.Employees.GetByIdAsync(managerId);
 
             if (manager == null)
-                throw new Exception($"Department with ID {managerId} not found");
+                throw new Exception($"Manager with ID {managerId} not found");
+
+            if (manager.Status != EmploymentStatus.Active)
+                throw new InvalidOperationException("Cannot assign an inactive employee as a manager.");
+
+            if (!department.IsActive)
+                throw new InvalidOperationException("Cannot assign a manager to an inactive department.");
 
             department.AssignManager(manager);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task RemoveManagerAsync(int departmentId)
+        {
+            var department = await GetDepartmentOrThrowAsync(departmentId);
+
+            if (department.ManagerId == null)
+                throw new InvalidOperationException("This department already has no manager assigned.");
+
+            department.RemoveManager();
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -94,7 +121,13 @@ namespace HRManagementSystem.Application.Services
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
 
             if (employee == null)
-                throw new Exception($"Department with ID {employeeId} not found");
+                throw new Exception($"Employee with ID {employeeId} not found");
+
+            if (employee.Status != EmploymentStatus.Active)
+                throw new InvalidOperationException("Cannot add an inactive employee to a department.");
+
+            if (!department.IsActive)
+                throw new InvalidOperationException("Cannot add employees to an inactive department.");
 
             department.AddEmployee(employee);
             await _unitOfWork.SaveChangesAsync();
@@ -106,10 +139,57 @@ namespace HRManagementSystem.Application.Services
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
 
             if (employee == null)
-                throw new Exception($"Department with ID {employeeId} not found");
+                throw new Exception($"Employee with ID {employeeId} not found");
+
+            if (employee.DepartmentId != departmentId)
+                throw new InvalidOperationException("Employee is not assigned to this department.");
 
             department.RemoveEmployee(employee);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task ActivateDepartmentAsync(int departmentId)
+        {
+            var department = await GetDepartmentOrThrowAsync(departmentId);
+
+            if (department.IsActive)
+                throw new InvalidOperationException("Department is already active.");
+
+            department.Activate();
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task DeactivateDepartmentAsync(int departmentId)
+        {
+            var department = await GetDepartmentOrThrowAsync(departmentId);
+
+            if (department.Code == "000" || department.Name == "Unassigned")
+                throw new InvalidOperationException("The system default department cannot be Deactivated.");
+
+            if (!department.IsActive)
+                throw new InvalidOperationException("Department is already inactive.");
+
+            department.Deactivate();
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // --------- Stats ---------
+        public async Task<DepartmentStatsDto> GetDepartmentStatsAsync(int departmentId)
+        {
+            var department = await _unitOfWork.Departments.GetByIdWithDetailsAsync(departmentId);
+
+            if (department == null)
+                throw new Exception($"Department with ID {departmentId} not found.");
+
+            return new DepartmentStatsDto
+            {
+                DepartmentId = department.Id,
+                Name = department.Name,
+                EmployeesCount = department.Employees?.Count ?? 0,
+                TotalSalary = department.Employees?.Sum(e => e.Salary.Amount) ?? 0,
+                ManagerName = department.Manager?.FullName.ToString() ?? "No Manager Assigned"
+            };
+        }
+
     }
 }

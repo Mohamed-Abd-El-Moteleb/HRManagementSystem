@@ -8,7 +8,6 @@ namespace HRManagementSystem.Application.DTOs.Department
 {
     public class UpdateDepartmentDto
     {
-        public int Id { get; set; }
 
         // Department Basic Info
         public string? Name { get; set; }
