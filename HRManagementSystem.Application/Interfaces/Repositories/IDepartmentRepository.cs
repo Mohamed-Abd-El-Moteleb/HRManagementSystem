@@ -12,10 +12,12 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
     {
         Task<Department?> GetByIdAsync(int id);
         Task<IEnumerable<Department>> GetAllAsync();
+        Task<Department> GetByIdWithDetailsAsync(int id);
         Task AddAsync(Department department);
         void Update(Department department);
         void Delete(Department department);
         Task<bool> AnyAsync(Expression<Func<Department, bool>> predicate);
+
 
     }
 }

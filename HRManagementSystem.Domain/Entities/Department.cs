@@ -32,6 +32,19 @@ namespace HRManagementSystem.Domain.Entities
             manager.ChangeJobTitle("Manager");
         }
 
+        public void RemoveManager()
+        {
+            if (Manager == null && ManagerId == null)
+                return;
+
+            if (Manager != null)
+            {
+                Manager.ChangeJobTitle("Employee");
+            }
+
+            Manager = null;
+            ManagerId = null;
+        }
         public void AddEmployee(Employee employee)
         {
             if (employee == null)

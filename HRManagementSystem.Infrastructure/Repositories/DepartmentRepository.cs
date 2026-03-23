@@ -50,5 +50,12 @@ namespace HRManagementSystem.Infrastructure.Repositories
         {
             return await _context.Departments.AnyAsync(predicate);
         }
+        public async Task<Department> GetByIdWithDetailsAsync(int id)
+        {
+            return await _context.Departments
+                .Include(d => d.Manager)
+                .Include(d => d.Employees)
+                .FirstOrDefaultAsync(d => d.Id == id);
+        }
     }
 }
