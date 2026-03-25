@@ -33,8 +33,11 @@ namespace HRManagementSystem.Application.BusinessRules
             return departmentId;
 
         }
-        public async Task CheckEmailAndNationalIdUniqueAsync(string email, string nationalId)
+        public async Task CheckEmailAndNationalIdUniqueAsync(string? email, string? nationalId)
         {
+            if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(nationalId))
+                return;
+
             var exists = await _repository.ExistsByEmailOrNationalIdAsync(email, nationalId);
             if (exists)
                 throw new InvalidOperationException("Email or National ID already exists.");

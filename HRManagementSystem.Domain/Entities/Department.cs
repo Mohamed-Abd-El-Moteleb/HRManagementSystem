@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HRManagementSystem.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,28 +9,79 @@ namespace HRManagementSystem.Domain.Entities
 {
     public class Department
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string? Description { get; set; }
-        public string? Code { get; set; }
-        public bool IsActive { get; set; } = true;
-        public int? ManagerId { get; set; }
-        public virtual Employee? Manager { get; set; }
-        public virtual ICollection<Employee>? Employees { get; set; } = new List<Employee>();
+        public int Id { get; private set; }
+        public string Name { get; private set; }
+        public string? Description { get; private set; }
+        public string? Code { get; private set; }
+        public bool IsActive { get; private set; } = true;
+        public int? ManagerId { get; private set; }
+        public virtual Employee? Manager { get; private set; }
 
-        public void Activate() => IsActive = true;
-        public void Deactivate() => IsActive = false;
+        private readonly List<Employee> _employees = new();
+        public virtual ICollection<Employee> Employees => _employees.AsReadOnly();
+        private Department() { }
+
+        public static Department CreateNew(string name, string? code, string? description = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Department name cannot be empty.", nameof(name));
+
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Department code is required.", nameof(code));
+
+            return new Department
+            {
+                Name = name,
+                Code = code.ToUpper(),
+                Description = description,
+                IsActive = true
+            };
+        }
+
+        public void UpdateDetails(string? name, string? description)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                Name= name; 
+            }
+
+            if (description != null)
+            {
+                Description = description;
+            }
+        }
+
+
+        public void Activate()
+        {
+            if (IsActive)
+                throw new InvalidOperationException("Department is already active.");
+            IsActive = true;
+        } 
+
+        public void Deactivate()
+        {
+            if (!IsActive)
+                throw new InvalidOperationException("Department is already inactive.");
+
+            if (_employees != null && _employees.Any(e => e.Status == EmploymentStatus.Active))
+                throw new InvalidOperationException("Cannot deactivate a department that has active employees.");
+
+            IsActive = false;
+        }
 
         public void AssignManager(Employee manager)
         {
-            if (manager == null)
+            if (manager == null) 
                 throw new ArgumentNullException(nameof(manager));
+            if (!IsActive) 
+                throw new InvalidOperationException("Cannot assign a manager to an inactive department.");
 
             Manager = manager;
             ManagerId = manager.Id;
 
             manager.AssignToDepartment(Id);
-            manager.ChangeJobTitle("Manager");
+            manager.ChangeJobTitle($"{Name}Manager");
         }
 
         public void RemoveManager()
@@ -39,7 +91,7 @@ namespace HRManagementSystem.Domain.Entities
 
             if (Manager != null)
             {
-                Manager.ChangeJobTitle("Employee");
+                Manager.ChangeJobTitle("Ex_Manager");
             }
 
             Manager = null;
@@ -47,15 +99,18 @@ namespace HRManagementSystem.Domain.Entities
         }
         public void AddEmployee(Employee employee)
         {
-            if (employee == null)
+            if (employee == null) 
                 throw new ArgumentNullException(nameof(employee));
 
-            if (!IsActive)
-                throw new InvalidOperationException("Cannot add employees to an inactive department.");
+            if (!IsActive) 
+                throw new InvalidOperationException("Department is inactive.");
 
-            if (!Employees.Contains(employee))
+            if (employee.Status != EmploymentStatus.Active)
+                throw new InvalidOperationException("Cannot add an inactive employee to a department.");
+
+            if (!_employees.Contains(employee))
             {
-                Employees.Add(employee);
+                _employees.Add(employee);
                 employee.AssignToDepartment(Id);
             }
         }
@@ -65,9 +120,9 @@ namespace HRManagementSystem.Domain.Entities
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
-            if (Employees.Contains(employee))
+            if (_employees.Contains(employee))
             {
-                Employees.Remove(employee);
+                _employees.Remove(employee);
                 employee.UnassignFromDepartment(); // Unassigned
             }
         }

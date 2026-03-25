@@ -1,4 +1,5 @@
-﻿using HRManagementSystem.Domain.Entities;
+﻿using HRManagementSystem.Application.DTOs.Employee;
+using HRManagementSystem.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
         void Update(Employee employee);
         void Delete(Employee employee);
         Task<IEnumerable<Employee>> GetByDepartmentIdAsync(int departmentId);
-        Task<bool> ExistsByEmailOrNationalIdAsync(string email, string nationalId);
+        Task<bool> ExistsByEmailOrNationalIdAsync(string? email, string? nationalId);
+        Task<(IEnumerable<Employee> Items, int TotalCount)> GetPagedAsync(EmployeeFilterDto filter);
     }
 }
