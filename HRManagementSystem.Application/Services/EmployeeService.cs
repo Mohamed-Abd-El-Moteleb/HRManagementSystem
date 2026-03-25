@@ -29,7 +29,7 @@ namespace HRManagementSystem.Application.Services
             _rules= rules;
         }
 
-        private async Task<Employee> GetEmployeeOrThrowAsync(int id)
+        public async Task<Employee> GetEmployeeOrThrowAsync(int id)
         {
             var employee = await _unitOfWork.Employees.GetByIdAsync(id);
             if (employee == null)
@@ -49,42 +49,49 @@ namespace HRManagementSystem.Application.Services
             return _mapper.Map<EmployeeDetailsDto>(employee);
         }
 
-        public async Task CreateAsync(CreateEmployeeDto dto)
+        public async Task<int> CreateAsync(CreateEmployeeDto dto)
         {
-
-
-
-           
             await _rules.CheckEmailAndNationalIdUniqueAsync(dto.Email, dto.NationalId);
-            var employee = Employee.CreateNew(
-        new FullName(dto.FirstName, dto.LastName),
-        new ContactInfo(dto.Email, dto.PhoneNumber, dto.EmergencyContactName, dto.EmergencyContactPhone),
-        new Address(dto.Street, dto.City, dto.BuildingNumber),
-        new NationalIdentity(dto.NationalId),
-        Enum.Parse<Gender>(dto.Gender),
-        dto.DateOfBirth,
-        new Money(dto.Salary, dto.SalaryCurrancy),
-        new ContractDetails(dto.ContractStartDate, dto.ContractEndDate, Enum.Parse<ContractType>(dto.ContractType)),
-        new BankAccount(dto.BankAccountNumber, dto.BankName, dto.Iban)
-    );
-
             var validDeptId = await _rules.GetValidDepartmentIdAsync(dto.DepartmentId);
+
+            var employee = Employee.CreateNew(
+                new FullName(dto.FirstName, dto.LastName),
+                new ContactInfo(dto.Email, dto.PhoneNumber, dto.EmergencyContactName, dto.EmergencyContactPhone),
+                new Address(dto.Street, dto.City, dto.BuildingNumber),
+                new NationalIdentity(dto.NationalId),
+                Enum.Parse<Gender>(dto.Gender),
+                dto.DateOfBirth,
+                new Money(dto.Salary, dto.SalaryCurrancy),
+                new ContractDetails(dto.ContractStartDate, dto.ContractEndDate, 
+                Enum.Parse<ContractType>(dto.ContractType)),
+                new BankAccount(dto.BankAccountNumber, dto.BankName, dto.Iban),
+                dto.JobTitle,
+                Enum.Parse<JobLevel>(dto.JobLevel)
+            );
+
             employee.AssignToDepartment(validDeptId);
 
             await _unitOfWork.Employees.AddAsync(employee);
             await _unitOfWork.SaveChangesAsync();
+            return employee.Id;
 
         }
 
         public async Task UpdateAsync(int id, UpdateEmployeeDto dto)
         {
-            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+            var employee = await GetEmployeeOrThrowAsync(id);
 
-            if (employee == null)
-                throw new InvalidOperationException($"Employee with ID {dto.Id} not found.");
 
-            if (!string.IsNullOrEmpty(dto.Email) || !string.IsNullOrEmpty(dto.NationalId))
-                await _rules.CheckEmailAndNationalIdUniqueAsync(dto.Email, dto.NationalId);
+            bool EmailChanged = !string.IsNullOrEmpty(dto.Email) && dto.Email != employee.ContactInfo.Email;
+            bool NationalIdChanged = !string.IsNullOrEmpty(dto.NationalId) && dto.NationalId != employee.NationalId.NationalId;
+
+            if (EmailChanged || NationalIdChanged)
+            {
+                await _rules.CheckEmailAndNationalIdUniqueAsync(
+                    EmailChanged ? dto.Email : null,
+                    NationalIdChanged ? dto.NationalId : null
+                );
+            }
 
             if (!string.IsNullOrEmpty(dto.FirstName) || !string.IsNullOrEmpty(dto.LastName))
                 employee.UpdateFullName(new FullName(
@@ -124,14 +131,12 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.Promote();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
         public async Task DemoteAsync(int id)
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.Demote();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -139,7 +144,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.Terminate();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -147,7 +151,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.Activate();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -155,7 +158,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.SetOnLeave();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -163,7 +165,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.Resign();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -171,15 +172,14 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.ChangeJobTitle(jobTitle);
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task AssignToDepartmentAsync(int id, int departmentId)
         {
             var employee = await GetEmployeeOrThrowAsync(id);
-            employee.AssignToDepartment(departmentId);
-            _unitOfWork.Employees.Update(employee);
+            var validDepartmentId= await _rules.GetValidDepartmentIdAsync(departmentId);
+            employee.AssignToDepartment(validDepartmentId);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -187,7 +187,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.UnassignFromDepartment();
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -195,7 +194,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.UpdateAddress(address);
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -203,7 +201,6 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.UpdateContactInfo(contactInfo);
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -211,8 +208,16 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await GetEmployeeOrThrowAsync(id);
             employee.AdjustSalary(money,increase);
-            _unitOfWork.Employees.Update(employee);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<(IEnumerable<EmployeeDto> Items, int TotalCount)> GetFilteredAsync(EmployeeFilterDto filter)
+        {
+            var (employees, totalCount) = await _unitOfWork.Employees.GetPagedAsync(filter);
+
+            var dtos = _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+
+            return (dtos, totalCount);
         }
     }
 }

@@ -16,9 +16,6 @@ namespace HRManagementSystem.Application.DTOs.Department
 
         public string? Code { get; set; }
 
-        public int? ManagerId { get; set; }
-
-        public bool IsActive { get; set; } = true;
 
     }
 }

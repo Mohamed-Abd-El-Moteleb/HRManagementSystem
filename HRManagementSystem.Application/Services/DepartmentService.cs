@@ -46,17 +46,18 @@ namespace HRManagementSystem.Application.Services
                 throw new Exception($"Department with ID {id} not found");
             return _mapper.Map<DepartmentDetailsDto>(department);
         }
-        public async Task CreateAsync(CreateDepartmentDto dto)
+        public async Task<int> CreateAsync(CreateDepartmentDto dto)
         {
-            var department = _mapper.Map<Department>(dto);
+            var department = Department.CreateNew(dto.Name, dto.Code, dto.Description);
             await _unitOfWork.Departments.AddAsync(department);
             await _unitOfWork.SaveChangesAsync();
+            return department.Id;
         }
 
         public async Task UpdateAsync(int id, UpdateDepartmentDto dto)
         {
             var department = await GetDepartmentOrThrowAsync(id);
-            _mapper.Map(dto, department);
+            department.UpdateDetails(dto.Name, dto.Description);
             _unitOfWork.Departments.Update(department);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -122,12 +123,6 @@ namespace HRManagementSystem.Application.Services
 
             if (employee == null)
                 throw new Exception($"Employee with ID {employeeId} not found");
-
-            if (employee.Status != EmploymentStatus.Active)
-                throw new InvalidOperationException("Cannot add an inactive employee to a department.");
-
-            if (!department.IsActive)
-                throw new InvalidOperationException("Cannot add employees to an inactive department.");
 
             department.AddEmployee(employee);
             await _unitOfWork.SaveChangesAsync();

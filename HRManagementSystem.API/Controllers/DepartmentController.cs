@@ -31,7 +31,7 @@ namespace HRManagementSystem.API.Controllers
         }
 
         [HttpGet("{id}/details")]
-        public async Task<IActionResult> GetByIdWithImportnatDetails(int id)
+        public async Task<IActionResult> GetByIdWithImportantDetails(int id)
         {
             var department = await _departmentService.GetByIdWithDetailsAsync(id);
             return Ok(department);
@@ -53,8 +53,11 @@ namespace HRManagementSystem.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateDepartmentDto dto)
         {
-            await _departmentService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = dto.Name }, dto);
+            var DeparmentId= await _departmentService.CreateAsync(dto);
+            return CreatedAtAction(actionName: nameof(GetById), 
+            routeValues: new { id = DeparmentId }, 
+            value: new { message = "Department created successfully", data = dto });
+            
         }
 
         [HttpPut("{id}")]
@@ -64,41 +67,41 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Department updated successfully");
         }
 
-        [HttpPut("{id}/assign-manager/{managerId}")]
+        [HttpPatch("{id}/assign-manager/{managerId}")]
         public async Task<IActionResult> AssignManager(int id, int managerId)
         {
             await _departmentService.AssignManagerAsync(id, managerId);
             return Ok("Manager Assigned successfully");
         }
 
-        [HttpPut("{id}/remove-manager")]
+        [HttpPatch("{id}/remove-manager")]
         public async Task<IActionResult> RemoveManager(int id)
         {
             await _departmentService.RemoveManagerAsync(id);
             return Ok("Manager Remove successfully");
         }
 
-        [HttpPut("{id}/add-employee/{employeeId}")]
+        [HttpPatch("{id}/add-employee/{employeeId}")]
         public async Task<IActionResult> AddEmployeeToDepartment(int id, int employeeId)
         {
             await _departmentService.AddEmployeeAsync(id, employeeId);
             return Ok("Employee Added successfully");
         }
 
-        [HttpPut("{id}/remove-employee/{employeeId}")]
+        [HttpPatch("{id}/remove-employee/{employeeId}")]
         public async Task<IActionResult> RemoveEmployeeFromDepartment(int id, int employeeId)
         {
             await _departmentService.RemoveEmployeeAsync(id, employeeId);
             return Ok("Employee Removed successfully");
         }
 
-        [HttpPut("{id}/activate-department")]
+        [HttpPatch("{id}/activate-department")]
         public async Task<IActionResult> ActivateDepartment(int id)
         {
             await _departmentService.ActivateDepartmentAsync(id);
             return Ok("Department Activated successfully");
         }
-        [HttpPut("{id}/deactivate-department")]
+        [HttpPatch("{id}/deactivate-department")]
         public async Task<IActionResult> DeactivateDepartment(int id)
         {
             await _departmentService.DeactivateDepartmentAsync(id);

@@ -12,13 +12,7 @@ namespace HRManagementSystem.Application.DTOs.Department
         // Department Basic Info
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public string? Code { get; set; }
 
-        // Status
-        public bool? IsActive { get; set; }
-
-        // Manager Info
-        public int? ManagerId { get; set; }
     }
 }
 

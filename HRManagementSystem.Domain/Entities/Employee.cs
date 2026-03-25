@@ -39,10 +39,43 @@ namespace HRManagementSystem.Domain.Entities
 
         public int Age => CalculateAge(DateOfBirth);
         // Business logic
-        public void Terminate() => Status = EmploymentStatus.Terminated;
-        public void Activate() => Status = EmploymentStatus.Active;
-        public void SetOnLeave() => Status = EmploymentStatus.OnLeave;
-        public void Resign() => Status = EmploymentStatus.Resigned;
+        public void Activate()
+        {
+            if (Status == EmploymentStatus.Active)
+                throw new InvalidOperationException("Employee is already active.");
+
+            Status = EmploymentStatus.Active;
+        }
+
+        public void SetOnLeave()
+        {
+            if (Status != EmploymentStatus.Active)
+                throw new InvalidOperationException("Only active employees can be set on leave.");
+
+            Status = EmploymentStatus.OnLeave;
+        }
+
+        public void Terminate()
+        {
+            if (Status == EmploymentStatus.Terminated)
+                throw new InvalidOperationException("Employee is already terminated.");
+
+            if (Status == EmploymentStatus.Resigned)
+                throw new InvalidOperationException("Resigned employees cannot be terminated.");
+
+            Status = EmploymentStatus.Terminated;
+        }
+
+        public void Resign()
+        {
+            if (Status == EmploymentStatus.Terminated)
+                throw new InvalidOperationException("Terminated employees cannot resign.");
+
+            if (Status == EmploymentStatus.Resigned)
+                throw new InvalidOperationException("Employee is already resigned.");
+
+            Status = EmploymentStatus.Resigned;
+        }
 
         public void UpdateFullName(FullName newFullName)
         {
@@ -161,7 +194,9 @@ namespace HRManagementSystem.Domain.Entities
     DateTime dateOfBirth,
     Money startingSalary,
     ContractDetails contractDetails,
-    BankAccount bankAccount)
+    BankAccount bankAccount,
+    string jobTitle,
+    JobLevel jobLevel)
         {
             if (dateOfBirth > DateTime.Today)
                 throw new ArgumentException("Date of birth cannot be in the future.", nameof(dateOfBirth));
@@ -190,8 +225,9 @@ namespace HRManagementSystem.Domain.Entities
                 Salary = startingSalary,
                 ContractDetails = contractDetails,
                 BankAccount = bankAccount,
+                JobTitle = jobTitle,
                 Status = EmploymentStatus.Active,
-                JobLevel = JobLevel.Junior
+                JobLevel = jobLevel
             };
         }
         private Employee() { }

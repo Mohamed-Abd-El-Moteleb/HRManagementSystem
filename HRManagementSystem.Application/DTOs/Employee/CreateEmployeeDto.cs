@@ -26,6 +26,8 @@ namespace HRManagementSystem.Application.DTOs.Employee
         public string BuildingNumber { get; set; } = string.Empty;
 
         // Employment info
+        public string JobTitle { get; set; }
+        public string JobLevel { get; set; }
         public DateTime DateOfBirth { get; set; }
         public decimal Salary { get; set; }
         public string SalaryCurrancy { get; set; } = string.Empty;

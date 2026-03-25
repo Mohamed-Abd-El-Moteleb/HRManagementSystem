@@ -14,7 +14,7 @@ namespace HRManagementSystem.Application.Interfaces.Services
         Task<DepartmentDetailsDto> GetByIdAsync(int id);
         Task<DepartmentDetailsDto> GetByIdWithDetailsAsync(int id);
         Task<IEnumerable<EmployeeDto>> GetEmployeesByDepartmentIdAsync(int departmentId);
-        Task CreateAsync(CreateDepartmentDto dto);
+        Task<int> CreateAsync(CreateDepartmentDto dto);
         Task UpdateAsync(int id , UpdateDepartmentDto dto);
         Task AssignManagerAsync(int departmentId, int managerId);
         Task RemoveManagerAsync(int departmentId);
