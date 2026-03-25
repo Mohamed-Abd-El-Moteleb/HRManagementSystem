@@ -11,15 +11,21 @@ namespace HRManagementSystem.Infrastructure.UnitOfWork
 
         public IEmployeeRepository Employees { get; }
         public IDepartmentRepository Departments { get; }
+        public ILeaveRequestRepository LeaveRequests { get; }
+        public ILeaveAllocationRepository LeaveAllocations { get; }
 
         public UnitOfWork(
             AppDbContext context,
             IEmployeeRepository employeeRepository,
-            IDepartmentRepository departmentRepository)
+            IDepartmentRepository departmentRepository,
+            ILeaveRequestRepository leaveRequests,
+            ILeaveAllocationRepository leaveAllocations)
         {
             _context = context;
             Employees = employeeRepository;
             Departments = departmentRepository;
+            LeaveRequests = leaveRequests;
+            LeaveAllocations = leaveAllocations;
         }
 
         public async Task<int> SaveChangesAsync()

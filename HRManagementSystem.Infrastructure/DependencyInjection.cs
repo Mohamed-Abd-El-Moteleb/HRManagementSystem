@@ -16,8 +16,12 @@ namespace HRManagementSystem.Infrastructure
         {
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+            services.AddScoped<ILeaveAllocationRepository, LeaveAllocationRepository>();
 
             services.AddScoped<IUnitOfWork, HRManagementSystem.Infrastructure.UnitOfWork.UnitOfWork>();
+
+            
 
             return services;
         }

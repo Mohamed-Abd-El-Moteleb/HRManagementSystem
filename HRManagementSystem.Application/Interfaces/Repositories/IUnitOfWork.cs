@@ -10,6 +10,8 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
     {
         IEmployeeRepository Employees { get; }
         IDepartmentRepository Departments { get; }
+        ILeaveRequestRepository LeaveRequests { get; }
+        ILeaveAllocationRepository LeaveAllocations { get; }
         Task<int> SaveChangesAsync();
     }
 }

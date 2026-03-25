@@ -8,11 +8,12 @@ namespace HRManagementSystem.Domain.Enums
 {
     public enum LeaveType
     {
-        Annual,
-        Sick,
-        Unpaid,
-        Maternity,
-        Paternity,
-        Emergency
+        Annual = 1,
+        Sick = 2,       
+        Casual = 3,      
+        Unpaid = 4,
+        Maternity = 5,
+        Bereavement = 6,
+        PublicHoliday = 7
     }
 }
