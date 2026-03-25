@@ -6,6 +6,7 @@ using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.Exceptions;
 
 namespace HRManagementSystem.Application.Services
 {
@@ -24,7 +25,7 @@ namespace HRManagementSystem.Application.Services
         {
             var department = await _unitOfWork.Departments.GetByIdAsync(id);
             if (department == null)
-                throw new Exception($"Department with ID {id} not found");
+                throw new NotFoundException($"Department with ID {id} not found");
             return department;
         }
 
@@ -43,7 +44,7 @@ namespace HRManagementSystem.Application.Services
         {
             var department = await _unitOfWork.Departments.GetByIdWithDetailsAsync(id);
             if (department == null)
-                throw new Exception($"Department with ID {id} not found");
+                throw new NotFoundException($"Department with ID {id} not found");
             return _mapper.Map<DepartmentDetailsDto>(department);
         }
         public async Task<int> CreateAsync(CreateDepartmentDto dto)
@@ -76,11 +77,11 @@ namespace HRManagementSystem.Application.Services
             var department = await GetDepartmentOrThrowAsync(id);
 
             if(department.Code=="000"||department.Name== "Unassigned")
-                throw new InvalidOperationException("The system default department cannot be deleted.");
+                throw new BusinessException("The system default department cannot be deleted.");
             var hasEmployees = await _unitOfWork.Employees.GetByDepartmentIdAsync(id);
 
             if (hasEmployees!=null&&hasEmployees.Any())
-                throw new InvalidOperationException("Cannot delete a department that still has employees. Please reassign them first.");
+                throw new BusinessException("Cannot delete a department that still has employees. Please reassign them first.");
 
             _unitOfWork.Departments.Delete(department);
             await _unitOfWork.SaveChangesAsync();
@@ -94,13 +95,13 @@ namespace HRManagementSystem.Application.Services
             var manager = await _unitOfWork.Employees.GetByIdAsync(managerId);
 
             if (manager == null)
-                throw new Exception($"Manager with ID {managerId} not found");
+                throw new NotFoundException($"Manager with ID {managerId} not found");
 
             if (manager.Status != EmploymentStatus.Active)
-                throw new InvalidOperationException("Cannot assign an inactive employee as a manager.");
+                throw new BusinessException("Cannot assign an inactive employee as a manager.");
 
             if (!department.IsActive)
-                throw new InvalidOperationException("Cannot assign a manager to an inactive department.");
+                throw new BusinessException("Cannot assign a manager to an inactive department.");
 
             department.AssignManager(manager);
             await _unitOfWork.SaveChangesAsync();
@@ -110,7 +111,7 @@ namespace HRManagementSystem.Application.Services
             var department = await GetDepartmentOrThrowAsync(departmentId);
 
             if (department.ManagerId == null)
-                throw new InvalidOperationException("This department already has no manager assigned.");
+                throw new BusinessException("This department already has no manager assigned.");
 
             department.RemoveManager();
             await _unitOfWork.SaveChangesAsync();
@@ -122,7 +123,7 @@ namespace HRManagementSystem.Application.Services
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
 
             if (employee == null)
-                throw new Exception($"Employee with ID {employeeId} not found");
+                throw new NotFoundException($"Employee with ID {employeeId} not found");
 
             department.AddEmployee(employee);
             await _unitOfWork.SaveChangesAsync();
@@ -134,10 +135,10 @@ namespace HRManagementSystem.Application.Services
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
 
             if (employee == null)
-                throw new Exception($"Employee with ID {employeeId} not found");
+                throw new NotFoundException($"Employee with ID {employeeId} not found");
 
             if (employee.DepartmentId != departmentId)
-                throw new InvalidOperationException("Employee is not assigned to this department.");
+                throw new BusinessException("Employee is not assigned to this department.");
 
             department.RemoveEmployee(employee);
             await _unitOfWork.SaveChangesAsync();
@@ -148,7 +149,7 @@ namespace HRManagementSystem.Application.Services
             var department = await GetDepartmentOrThrowAsync(departmentId);
 
             if (department.IsActive)
-                throw new InvalidOperationException("Department is already active.");
+                throw new BusinessException("Department is already active.");
 
             department.Activate();
             await _unitOfWork.SaveChangesAsync();
@@ -159,10 +160,10 @@ namespace HRManagementSystem.Application.Services
             var department = await GetDepartmentOrThrowAsync(departmentId);
 
             if (department.Code == "000" || department.Name == "Unassigned")
-                throw new InvalidOperationException("The system default department cannot be Deactivated.");
+                throw new BusinessException("The system default department cannot be Deactivated.");
 
             if (!department.IsActive)
-                throw new InvalidOperationException("Department is already inactive.");
+                throw new BusinessException("Department is already inactive.");
 
             department.Deactivate();
             await _unitOfWork.SaveChangesAsync();
@@ -174,7 +175,7 @@ namespace HRManagementSystem.Application.Services
             var department = await _unitOfWork.Departments.GetByIdWithDetailsAsync(departmentId);
 
             if (department == null)
-                throw new Exception($"Department with ID {departmentId} not found.");
+                throw new NotFoundException($"Department with ID {departmentId} not found.");
 
             return new DepartmentStatsDto
             {

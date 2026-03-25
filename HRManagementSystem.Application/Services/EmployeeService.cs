@@ -5,6 +5,7 @@ using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.Exceptions;
 using HRManagementSystem.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace HRManagementSystem.Application.Services
         {
             var employee = await _unitOfWork.Employees.GetByIdAsync(id);
             if (employee == null)
-                throw new KeyNotFoundException($"Employee with ID {id} not found");
+                throw new NotFoundException($"Employee with ID {id} not found");
             return employee;
         }
 

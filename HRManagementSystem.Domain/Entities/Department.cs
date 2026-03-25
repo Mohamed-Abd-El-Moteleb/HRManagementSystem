@@ -1,4 +1,5 @@
 ﻿using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +25,10 @@ namespace HRManagementSystem.Domain.Entities
         public static Department CreateNew(string name, string? code, string? description = null)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Department name cannot be empty.", nameof(name));
+                throw new BusinessException("Department name cannot be empty.");
 
             if (string.IsNullOrWhiteSpace(code))
-                throw new ArgumentException("Department code is required.", nameof(code));
+                throw new BusinessException("Department code is required.");
 
             return new Department
             {
@@ -55,17 +56,17 @@ namespace HRManagementSystem.Domain.Entities
         public void Activate()
         {
             if (IsActive)
-                throw new InvalidOperationException("Department is already active.");
+                throw new BusinessException("Department is already active.");
             IsActive = true;
         } 
 
         public void Deactivate()
         {
             if (!IsActive)
-                throw new InvalidOperationException("Department is already inactive.");
+                throw new BusinessException("Department is already inactive.");
 
             if (_employees != null && _employees.Any(e => e.Status == EmploymentStatus.Active))
-                throw new InvalidOperationException("Cannot deactivate a department that has active employees.");
+                throw new BusinessException("Cannot deactivate a department that has active employees.");
 
             IsActive = false;
         }
@@ -75,7 +76,7 @@ namespace HRManagementSystem.Domain.Entities
             if (manager == null) 
                 throw new ArgumentNullException(nameof(manager));
             if (!IsActive) 
-                throw new InvalidOperationException("Cannot assign a manager to an inactive department.");
+                throw new BusinessException("Cannot assign a manager to an inactive department.");
 
             Manager = manager;
             ManagerId = manager.Id;
@@ -103,10 +104,10 @@ namespace HRManagementSystem.Domain.Entities
                 throw new ArgumentNullException(nameof(employee));
 
             if (!IsActive) 
-                throw new InvalidOperationException("Department is inactive.");
+                throw new BusinessException("Department is inactive.");
 
             if (employee.Status != EmploymentStatus.Active)
-                throw new InvalidOperationException("Cannot add an inactive employee to a department.");
+                throw new BusinessException("Cannot add an inactive employee to a department.");
 
             if (!_employees.Contains(employee))
             {
