@@ -2,6 +2,7 @@
 using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.Exceptions;
 using HRManagementSystem.Domain.ValueObjects;
 using System;
 using System.Text.RegularExpressions;
@@ -28,7 +29,7 @@ namespace HRManagementSystem.Application.BusinessRules
 
             var exists = await _depatmentrepository.AnyAsync(d => d.Id == departmentId);
             if (!exists)
-                throw new InvalidOperationException($"Department with ID {departmentId} does not exist.");
+                throw new BusinessException($"Department with ID {departmentId} does not exist.");
 
             return departmentId;
 
@@ -40,7 +41,7 @@ namespace HRManagementSystem.Application.BusinessRules
 
             var exists = await _repository.ExistsByEmailOrNationalIdAsync(email, nationalId);
             if (exists)
-                throw new InvalidOperationException("Email or National ID already exists.");
+                throw new BusinessException("Email or National ID already exists.");
         }
 
         

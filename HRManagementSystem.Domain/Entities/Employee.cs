@@ -1,4 +1,5 @@
 ﻿using HRManagementSystem.Domain.Enums;
+using HRManagementSystem.Domain.Exceptions;
 using HRManagementSystem.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace HRManagementSystem.Domain.Entities
         public void Activate()
         {
             if (Status == EmploymentStatus.Active)
-                throw new InvalidOperationException("Employee is already active.");
+                throw new BusinessException("Employee is already active.");
 
             Status = EmploymentStatus.Active;
         }
@@ -50,7 +51,7 @@ namespace HRManagementSystem.Domain.Entities
         public void SetOnLeave()
         {
             if (Status != EmploymentStatus.Active)
-                throw new InvalidOperationException("Only active employees can be set on leave.");
+                throw new BusinessException("Only active employees can be set on leave.");
 
             Status = EmploymentStatus.OnLeave;
         }
@@ -58,10 +59,10 @@ namespace HRManagementSystem.Domain.Entities
         public void Terminate()
         {
             if (Status == EmploymentStatus.Terminated)
-                throw new InvalidOperationException("Employee is already terminated.");
+                throw new BusinessException("Employee is already terminated.");
 
             if (Status == EmploymentStatus.Resigned)
-                throw new InvalidOperationException("Resigned employees cannot be terminated.");
+                throw new BusinessException("Resigned employees cannot be terminated.");
 
             Status = EmploymentStatus.Terminated;
         }
@@ -69,10 +70,10 @@ namespace HRManagementSystem.Domain.Entities
         public void Resign()
         {
             if (Status == EmploymentStatus.Terminated)
-                throw new InvalidOperationException("Terminated employees cannot resign.");
+                throw new BusinessException("Terminated employees cannot resign.");
 
             if (Status == EmploymentStatus.Resigned)
-                throw new InvalidOperationException("Employee is already resigned.");
+                throw new BusinessException("Employee is already resigned.");
 
             Status = EmploymentStatus.Resigned;
         }
@@ -80,13 +81,13 @@ namespace HRManagementSystem.Domain.Entities
         public void UpdateFullName(FullName newFullName)
         {
             if (newFullName is null)
-                throw new ArgumentNullException(nameof(newFullName), "Full name cannot be null.");
+                throw new BusinessException("Full name cannot be null.");
             FullName = newFullName;
         }
         public void ChangeJobTitle(string newTitle)
         {
-            if (newTitle.Length < 3)
-                throw new ArgumentException("Job title must be at least 3 characters long.", nameof(newTitle));
+            if (string.IsNullOrWhiteSpace(newTitle) || newTitle.Length < 3)
+                throw new BusinessException("Job title is required and must be at least 3 characters.");
 
             JobTitle = newTitle;
         }
@@ -94,7 +95,7 @@ namespace HRManagementSystem.Domain.Entities
         public void AssignToDepartment(int departmentId)
         {
             if (departmentId <= 0)
-                throw new ArgumentException("Department ID must be greater than zero.", nameof(departmentId));
+                throw new BusinessException("Department ID must be greater than zero.");
 
             DepartmentId = departmentId;
         }
@@ -102,7 +103,7 @@ namespace HRManagementSystem.Domain.Entities
         public void UnassignFromDepartment()
         {
             if (DepartmentId == 0)
-                throw new InvalidOperationException("Employee is not assigned to any department.");
+                throw new BusinessException("Employee is not assigned to any department.");
             DepartmentId = 2;
         }
 
@@ -110,70 +111,71 @@ namespace HRManagementSystem.Domain.Entities
         public void UpdateAddress(Address newAddress)
         {
             if (newAddress is null)
-                throw new ArgumentNullException(nameof(newAddress), "Address cannot be null.");
+                throw new BusinessException("Address cannot be null.");
 
             Address = newAddress;
         }
         public void UpdateNationalId(NationalIdentity newNationalId)
         {
             if (newNationalId is null)
-                throw new ArgumentNullException(nameof(newNationalId), "National ID cannot be null.");
+                throw new BusinessException( "National ID cannot be null.");
             NationalId = newNationalId;
         }
 
         public void UpdateContactInfo(ContactInfo newContactInfo)
         {
             if (newContactInfo == null)
-                throw new ArgumentNullException(nameof(newContactInfo));
+                throw new BusinessException("Contact information cannot be empty.");
 
             ContactInfo = newContactInfo;
         }
         public void SetSalary(Money newSalary)
         {
             if (newSalary == null)
-                throw new ArgumentNullException(nameof(newSalary));
+                throw new BusinessException("Salary cannot be empty.");
             if (newSalary.Amount <= 0)
-                throw new ArgumentException("Salary must be greater than zero.", nameof(newSalary));
+                throw new BusinessException("Salary must be greater than zero.");
 
             Salary = newSalary;
         }
         public void AdjustSalary(Money amount, bool increase = true)
         {
             if (amount == null)
-                throw new ArgumentNullException(nameof(amount));
+                throw new BusinessException("Salary adjustment amount cannot be empty.");
             if (amount.Amount <= 0)
-                throw new ArgumentException("Salary adjustment amount must be greater than zero.", nameof(amount));
+                throw new BusinessException("Salary adjustment amount must be greater than zero.");
 
             Salary = increase ? Salary.Add(amount) : Salary.Subtract(amount);
         }
 
         public void UpdateContractDetails(ContractDetails newContract)
         {
-            if (newContract == null) throw new ArgumentNullException(nameof(newContract));
+            if (newContract == null) 
+                throw new BusinessException("Contract Details cannot be empty.");
             ContractDetails = newContract;
         }
 
         public void UpdateBankAccount(BankAccount newAccount)
         {
-            if (newAccount == null) throw new ArgumentNullException(nameof(newAccount));
+            if (newAccount == null) throw new BusinessException("Bank Account cannot be empty.");
             BankAccount = newAccount;
         }
         public void UpdateProfileImagePath(string profileImagePath)
         {
-            if (profileImagePath == null) throw new ArgumentNullException(nameof(profileImagePath));
+            if (profileImagePath == null) throw new BusinessException("Profile Image cannot be empty.");
             ProfileImagePath = profileImagePath;
         }
         public void Promote()
         {
             if (JobLevel == JobLevel.Director)
-                throw new InvalidOperationException("Employee is already at the highest level.");
+                throw new BusinessException("Employee is already at the highest level.");
             JobLevel++;
         }
 
         public void Demote()
         {
             if (JobLevel == JobLevel.Intern)
-                throw new InvalidOperationException("Employee is already at the lowest level.");
+                throw new BusinessException("Employee is already at the lowest level.");
             JobLevel--;
         }
 
@@ -199,19 +201,19 @@ namespace HRManagementSystem.Domain.Entities
     JobLevel jobLevel)
         {
             if (dateOfBirth > DateTime.Today)
-                throw new ArgumentException("Date of birth cannot be in the future.", nameof(dateOfBirth));
+                throw new BusinessException("Date of birth cannot be in the future.");
 
             if (CalculateAge(dateOfBirth) < 18)
-                throw new ArgumentException("Employee must be at least 18 years old.", nameof(dateOfBirth));
+                throw new BusinessException("Employee must be at least 18 years old.");
 
             if (startingSalary.Amount <= 0)
-                throw new ArgumentException("Salary must be positive.", nameof(startingSalary));
+                throw new BusinessException("Salary must be positive.");
 
             if (contractDetails is null)
-                throw new ArgumentNullException(nameof(contractDetails));
+                throw new BusinessException("Contract Details cannot be empty.");
 
             if (bankAccount is null)
-                throw new ArgumentNullException(nameof(bankAccount));
+                throw new BusinessException("Bank Account cannot be empty.");
 
             return new Employee
             {

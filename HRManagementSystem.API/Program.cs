@@ -1,4 +1,5 @@
 
+using HRManagementSystem.API.Middleware;
 using HRManagementSystem.Application;
 using HRManagementSystem.Infrastructure;
 using HRManagementSystem.Infrastructure.Data.Context;
@@ -28,6 +29,7 @@ namespace HRManagementSystem.API
 
             var app = builder.Build();
 
+            app.UseMiddleware<ExceptionMiddleware>();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
