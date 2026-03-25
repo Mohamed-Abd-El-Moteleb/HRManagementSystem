@@ -46,8 +46,14 @@ namespace HRManagementSystem.Infrastructure.Data.Configurations
 
             // Seed Data
             builder.HasData(
-                new Department { Id = 1, Name = "Unassigned", Description = "Handles employee Who Dosen't have a Department" }
-            );
+               new
+               {
+                   Id = 1,
+                   Name = "Unassigned",
+                   Code = "000",
+                   Description = "Default department for employees without an assigned department",
+                   IsActive = true
+               });
         }
     }
 }
