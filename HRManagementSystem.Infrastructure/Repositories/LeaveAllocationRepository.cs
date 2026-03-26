@@ -22,8 +22,13 @@ namespace HRManagementSystem.Infrastructure.Repositories
 
        public async Task<LeaveAllocation?> GetEmployeeAllocationAsync(int employeeId, int year, LeaveType type)
         {
-            return await _context.LeaveAllocations.FirstOrDefaultAsync(la=>la.EmployeeId==employeeId&& la.Year == year && la.LeaveType == type);
+            return await _context.LeaveAllocations.FirstOrDefaultAsync(la => la.EmployeeId == employeeId && la.Year == year && la.LeaveType == type);
         }
+        public async Task<IEnumerable<LeaveAllocation?>> GetByEmployeeIdAsync(int employeeId)
+        {
+            return await _context.LeaveAllocations.Where(la => la.EmployeeId == employeeId).ToListAsync();
+        }
+
         public async Task AddAsync(LeaveAllocation allocation)
         {
             await _context.LeaveAllocations.AddAsync(allocation);
@@ -32,6 +37,10 @@ namespace HRManagementSystem.Infrastructure.Repositories
         public void Update(LeaveAllocation allocation)
         {
             _context.LeaveAllocations.Update(allocation);
+        }
+        public void Delete(LeaveAllocation allocation)
+        {
+            _context.LeaveAllocations.Remove(allocation);
         }
     }
 }

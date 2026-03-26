@@ -12,8 +12,10 @@ namespace HRManagementSystem.Application.Interfaces.Services
     {
         Task<int> RequestLeaveAsync(CreateLeaveRequestDto requestDto);
         Task ApproveLeaveAsync(int requestId, string? managerComment);
-        Task RejectLeaveAsync(int requestId, string managerComment);
+        Task RejectLeaveAsync(int requestId, string? managerComment);
         Task CancelLeaveAsync(int requestId);
         Task<IEnumerable<LeaveRequestDetailsDto>> GetEmployeeLeavesAsync(int employeeId);
+        Task<LeaveRequestDetailsDto?> GetLeaveDetailsAsync(int requesId);
+        Task<IEnumerable<LeaveRequestDetailsDto?>> GetAllPendingRequestsAsync();
     }
 }

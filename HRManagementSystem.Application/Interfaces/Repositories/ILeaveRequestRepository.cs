@@ -12,6 +12,7 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
         Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int employeeId);
         Task<LeaveRequest?> GetWithEmployeeAsync(int id);
         Task<LeaveRequest?> GetByIdAsync(int id);
+        Task<IEnumerable<LeaveRequest?>> GetAllPendingAsync();
         Task AddAsync(LeaveRequest leaveRequest);
         void Update(LeaveRequest leaveRequest);
         void Delete(LeaveRequest leaveRequest);
