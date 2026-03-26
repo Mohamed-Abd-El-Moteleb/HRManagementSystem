@@ -27,6 +27,16 @@
 - Structural Management: CRUD operations for departments with Data Protection (Prevents deletion of departments with active employees).
 - Unassigned Safety Net: Built-in logic to handle employees in the 'Unassigned' category to avoid orphan records.
 - Managerial Roles: Assign and track department managers with validation to ensure they belong to the correct unit.
+  
+**Leave Management** (New)
+- Automated Workflow: Full lifecycle from request to approval/rejection (Pending, Approved, Rejected, Cancelled).
+- Balance Allocation: Dynamic allocation of leave days per year/type (Annual, Sick, Casual) with validation logic to prevent over-requesting.
+- Managerial Oversight: Dedicated endpoints for managers to review and add comments to leave requests.
+  
+**Attendance Tracking** (Upcoming)
+- Operational Logging: Precise check-in and check-out recording for daily attendance.
+- Automated Status: Logic-driven attendance categorization (Present, Late, Absent, Half-Day).
+- Historical Analytics: API endpoints for department-wide and individual attendance history reports.
 
 ## Technologies Used
 
