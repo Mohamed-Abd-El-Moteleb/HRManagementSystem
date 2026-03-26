@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace HRManagementSystem.Application.DTOs.LeaveAllocation
 {
-    public class LeaveAllocationDto
+    public class CreateAllocationDto
     {
+        public int EmployeeId { get; set; }
         public int Year { get; set; }
         public LeaveType LeaveType { get; set; }
         public int TotalDays { get; set; }
-        public int UsedDays { get; set; }
-        public int RemainingDays { get; set; }
     }
 }

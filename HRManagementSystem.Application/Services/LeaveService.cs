@@ -26,6 +26,18 @@ namespace HRManagementSystem.Application.Services
             _unitOfWork = unitOfWork;
         }
 
+       public async Task<LeaveRequestDetailsDto?> GetLeaveDetailsAsync(int requesId)
+        {
+            var leave = await _requestRepository.GetByIdAsync(requesId);
+            return leave == null ? null : MapToDto(leave);
+        }
+       public async Task<IEnumerable<LeaveRequestDetailsDto>> GetAllPendingRequestsAsync()
+        {
+            var leaves = await _requestRepository.GetAllPendingAsync();
+            return leaves.Select(MapToDto).ToList();
+        }
+
+
         public async Task<int> RequestLeaveAsync(CreateLeaveRequestDto dto)
         {
             var currentYear = DateTime.Now.Year;
@@ -58,7 +70,7 @@ namespace HRManagementSystem.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task RejectLeaveAsync(int requestId, string managerComment)
+        public async Task RejectLeaveAsync(int requestId, string? managerComment)
         {
             var request = await _unitOfWork.LeaveRequests.GetByIdAsync(requestId);
             if (request == null) throw new BusinessException("Leave request not found.");
@@ -102,21 +114,27 @@ namespace HRManagementSystem.Application.Services
         {
             var leaves = await _unitOfWork.LeaveRequests.GetByEmployeeIdAsync(employeeId);
 
-            var dtos = leaves.Select(l => new LeaveRequestDetailsDto
-            {
-                Id = l.Id,
-                StartDate = l.StartDate,
-                EndDate = l.EndDate,
-                DurationInDays = l.DurationInDays,
-                Status = l.Status,
-                Type = l.Type,
-                Reason = l.Reason,
-                RequestedAt = l.RequestedAt,
-                ManagerComment = l.ManagerComment,
-                EmployeeName = l.Employee?.FullName.ToString()?? "Uknown"
-            }).ToList();
+            var dtos = leaves.Select(MapToDto).ToList();
             return dtos ?? new List<LeaveRequestDetailsDto>();
 
+        }
+
+
+        private LeaveRequestDetailsDto MapToDto(LeaveRequest leave)
+        {
+            return new LeaveRequestDetailsDto
+            {
+                Id = leave.Id,
+                StartDate = leave.StartDate,
+                EndDate = leave.EndDate,
+                DurationInDays = leave.DurationInDays,
+                Status = leave.Status,
+                Type = leave.Type,
+                Reason = leave.Reason,
+                RequestedAt = leave.RequestedAt,
+                ManagerComment = leave.ManagerComment,
+                EmployeeName = leave.Employee?.FullName.ToString() ?? "Unknown"
+            };
         }
     }
 }

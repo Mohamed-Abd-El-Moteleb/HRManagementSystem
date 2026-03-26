@@ -26,6 +26,26 @@ namespace HRManagementSystem.API
 
             builder.Services.AddInfrastructureLayer();
 
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.OrderActionsBy((apiDesc) =>
+                {
+                    var httpMethodsOrder = new Dictionary<string, int>
+        {
+            { "GET", 1 },
+            { "POST", 2 },
+            { "PUT", 3 },
+            { "PATCH", 4 },
+            { "DELETE", 5 }
+        };
+
+                    var methodOrder = httpMethodsOrder.ContainsKey(apiDesc.HttpMethod!)
+                                      ? httpMethodsOrder[apiDesc.HttpMethod!]
+                                      : 9;
+
+                    return $"{methodOrder}_{apiDesc.RelativePath}";
+                });
+            });
 
             var app = builder.Build();
 

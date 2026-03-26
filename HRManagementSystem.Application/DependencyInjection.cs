@@ -24,6 +24,7 @@ namespace HRManagementSystem.Application
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<ILeaveService, LeaveService>();
+            services.AddScoped<ILeaveAllocationService, LeaveAllocationService>();
             services.AddScoped<EmployeeBusinessRules>();
 
 

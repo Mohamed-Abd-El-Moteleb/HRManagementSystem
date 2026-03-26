@@ -1,5 +1,6 @@
 ﻿using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Domain.Entities;
+using HRManagementSystem.Domain.Enums;
 using HRManagementSystem.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,16 +27,20 @@ namespace HRManagementSystem.Infrastructure.Repositories
         {
             return await _context.LeaveRequests.Include(lr => lr.Employee).FirstOrDefaultAsync(lr => lr.Id == id);
         }
-
+        public async Task<LeaveRequest?> GetByIdAsync(int id)
+        {
+            return await _context.LeaveRequests.FindAsync(id);
+        }
+        public async Task<IEnumerable<LeaveRequest?>> GetAllPendingAsync()
+        {
+            return await _context.LeaveRequests.Where(lr => lr.Status == LeaveStatus.Pending).Include(lr => lr.Employee).OrderByDescending(lr => lr.RequestedAt).ToListAsync();
+        }
         public async Task AddAsync(LeaveRequest leaveRequest)
         {
             await _context.LeaveRequests.AddAsync(leaveRequest);
         }
 
-        public async Task<LeaveRequest?> GetByIdAsync(int id)
-        {
-            return await _context.LeaveRequests.FindAsync(id);
-        }
+        
 
         public void Update(LeaveRequest leaveRequest)
         {

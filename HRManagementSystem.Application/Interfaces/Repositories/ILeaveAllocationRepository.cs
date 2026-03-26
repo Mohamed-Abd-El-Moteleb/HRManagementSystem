@@ -11,6 +11,7 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
     public interface ILeaveAllocationRepository
     {
         Task<LeaveAllocation?> GetEmployeeAllocationAsync(int employeeId, int year, LeaveType type);
+        Task<IEnumerable<LeaveAllocation?>> GetByEmployeeIdAsync(int employeeId);
         Task AddAsync(LeaveAllocation allocation);
         void Update(LeaveAllocation allocation);
     }
