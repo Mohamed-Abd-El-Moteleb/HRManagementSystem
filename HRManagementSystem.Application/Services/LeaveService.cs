@@ -15,18 +15,21 @@ namespace HRManagementSystem.Application.Services
     {
         private readonly ILeaveRequestRepository _requestRepository;
         private readonly ILeaveAllocationRepository _allocationRepository;
+        private readonly IPublicHolidayService _publicHolidayService;
         private readonly IUnitOfWork _unitOfWork;
         public LeaveService(
         ILeaveRequestRepository requestRepository,
         ILeaveAllocationRepository allocationRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IPublicHolidayService publicHolidayService)
         {
             _requestRepository = requestRepository;
             _allocationRepository = allocationRepository;
             _unitOfWork = unitOfWork;
+            _publicHolidayService = publicHolidayService;
         }
 
-       public async Task<LeaveRequestDetailsDto?> GetLeaveDetailsAsync(int requesId)
+        public async Task<LeaveRequestDetailsDto?> GetLeaveDetailsAsync(int requesId)
         {
             var leave = await _requestRepository.GetByIdAsync(requesId);
             return leave == null ? null : MapToDto(leave);
@@ -41,19 +44,33 @@ namespace HRManagementSystem.Application.Services
         public async Task<int> RequestLeaveAsync(CreateLeaveRequestDto dto)
         {
             var currentYear = DateTime.Now.Year;
-            var allocation = await _allocationRepository.GetEmployeeAllocationAsync(dto.EmployeeId, currentYear, dto.LeaveType);
 
-            if (allocation == null)
-                throw new BusinessException("No leave allocation found for this employee for the current year.");
+            int publicHolidaysCount = 0;
+            for (var date = dto.StartDate.Date; date <= dto.EndDate.Date; date = date.AddDays(1))
+            {
+                if (await _publicHolidayService.IsDatePublicHolidayAsync(date))
+                {
+                    publicHolidaysCount++;
+                }
+            }
 
             var leaveRequest = LeaveRequest.Create(
-            dto.EmployeeId,
-            dto.LeaveType,
-            dto.StartDate,
-            dto.EndDate,
-            dto.Reason);
+                dto.EmployeeId,
+                dto.LeaveType,
+                dto.StartDate,
+                dto.EndDate,
+                dto.Reason);
 
-            allocation.DeductDays(leaveRequest.DurationInDays);
+            int actualDaysToDeduct = leaveRequest.DurationInDays - publicHolidaysCount;
+
+            if (actualDaysToDeduct <= 0)
+                throw new BusinessException("All requested days are public holidays.");
+            var allocation = await _allocationRepository.GetEmployeeAllocationAsync(dto.EmployeeId, currentYear, dto.LeaveType);
+
+            if (allocation == null || allocation.RemainingDays < actualDaysToDeduct)
+                throw new BusinessException("Inssuficient leave balance.");
+
+            allocation.DeductDays(actualDaysToDeduct);
 
             await _unitOfWork.LeaveRequests.AddAsync(leaveRequest);
             await _unitOfWork.SaveChangesAsync();

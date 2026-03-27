@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HRManagementSystem.Application.DTOs.Department;
 using HRManagementSystem.Application.DTOs.Employee;
+using HRManagementSystem.Application.DTOs.PublicHoliday;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.Enums;
 using HRManagementSystem.Domain.ValueObjects;
@@ -63,6 +64,14 @@ namespace HRManagementSystem.Application.Mappings
 
             CreateMap<CreateDepartmentDto, Department>();
             CreateMap<UpdateDepartmentDto, Department>();
+
+            //Public Holidays
+
+            CreateMap<PublicHoliday, PublicHolidayResponseDto>().
+                ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.Period.StartDate)).
+                ForMember(dest=>dest.EndDate,opt=>opt.MapFrom(src=>src.Period.EndDate)).
+                ForMember(dest=>dest.TotalDays,opt=>opt.MapFrom(src=>src.Period.TotalDays))
+               .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.Year));
 
         }
     }

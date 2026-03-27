@@ -1,4 +1,5 @@
-﻿using HRManagementSystem.Application.DTOs.Employee;
+﻿using HRManagementSystem.Application.Common;
+using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.ValueObjects;
 using System;
@@ -11,6 +12,7 @@ namespace HRManagementSystem.Application.Interfaces.Services
 {
     public interface IEmployeeService
     {
+        Task<Result<IEnumerable<EmployeeDto>>> SearchEmployeesAsync(EmployeeFilterRequest filter);
         Task<IEnumerable<EmployeeDto>> GetAllAsync();
         Task<EmployeeDetailsDto> GetByIdAsync(int id);
         Task<Employee> GetEmployeeOrThrowAsync(int id);
@@ -29,7 +31,6 @@ namespace HRManagementSystem.Application.Interfaces.Services
         Task UpdateAddressAsync(int id, Address address);
         Task UpdateContactInfoAsync(int id, ContactInfo contactInfo);
         Task AdjustSalaryAsync(int id, Money money, bool increase = true);
-        Task<(IEnumerable<EmployeeDto> Items, int TotalCount)> GetFilteredAsync(EmployeeFilterDto filter);
     }
         
 }

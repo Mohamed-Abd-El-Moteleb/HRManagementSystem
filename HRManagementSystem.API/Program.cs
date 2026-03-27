@@ -1,9 +1,11 @@
 
 using HRManagementSystem.API.Middleware;
 using HRManagementSystem.Application;
+using HRManagementSystem.Application.Services.Background_Task;
 using HRManagementSystem.Infrastructure;
 using HRManagementSystem.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace HRManagementSystem.API
 {
@@ -15,8 +17,11 @@ namespace HRManagementSystem.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -26,27 +31,10 @@ namespace HRManagementSystem.API
 
             builder.Services.AddInfrastructureLayer();
 
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.OrderActionsBy((apiDesc) =>
-                {
-                    var httpMethodsOrder = new Dictionary<string, int>
-        {
-            { "GET", 1 },
-            { "POST", 2 },
-            { "PUT", 3 },
-            { "PATCH", 4 },
-            { "DELETE", 5 }
-        };
+            builder.Services.AddSwaggerGen();
+            
 
-                    var methodOrder = httpMethodsOrder.ContainsKey(apiDesc.HttpMethod!)
-                                      ? httpMethodsOrder[apiDesc.HttpMethod!]
-                                      : 9;
-
-                    return $"{methodOrder}_{apiDesc.RelativePath}";
-                });
-            });
-
+            builder.Services.AddHostedService<AttendanceBackgroundJob>();
             var app = builder.Build();
 
             app.UseMiddleware<ExceptionMiddleware>();

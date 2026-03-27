@@ -17,6 +17,19 @@ namespace HRManagementSystem.API.Controllers
             _employeeService = employeeService;
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] EmployeeFilterRequest filter)
+        {
+            var result = await _employeeService.SearchEmployeesAsync(filter);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+
+            return Ok(result.Value);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll() 
         {
@@ -24,13 +37,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(employees);
         }
 
-        [HttpGet("filtered")]
-        public async Task<IActionResult> GetFiltered([FromQuery] EmployeeFilterDto filter)
-        {
-            var employees = await _employeeService.GetFilteredAsync(filter);
-            return Ok(employees);
-        }
-
+       
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

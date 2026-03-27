@@ -17,6 +17,7 @@ namespace HRManagementSystem.Application.Interfaces.Repositories
         void Delete(Employee employee);
         Task<IEnumerable<Employee>> GetByDepartmentIdAsync(int departmentId);
         Task<bool> ExistsByEmailOrNationalIdAsync(string? email, string? nationalId);
-        Task<(IEnumerable<Employee> Items, int TotalCount)> GetPagedAsync(EmployeeFilterDto filter);
+
+        Task<(IEnumerable<Employee> Data, int TotalCount)> SearchEmployeesAsync(EmployeeFilterRequest filter);
     }
 }

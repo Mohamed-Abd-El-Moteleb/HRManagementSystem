@@ -16,6 +16,8 @@ namespace HRManagementSystem.Infrastructure.Data.Context
         public DbSet<Department> Departments { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<LeaveAllocation> LeaveAllocations { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<PublicHoliday> PublicHolidays { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
