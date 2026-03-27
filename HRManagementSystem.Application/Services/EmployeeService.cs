@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HRManagementSystem.Application.BusinessRules;
+using HRManagementSystem.Application.Common;
 using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Application.Interfaces.Repositories;
 using HRManagementSystem.Application.Interfaces.Services;
@@ -30,6 +31,27 @@ namespace HRManagementSystem.Application.Services
             _rules= rules;
         }
 
+        public async Task<Result<IEnumerable<EmployeeDto>>> SearchEmployeesAsync(EmployeeFilterRequest filter)
+        {
+            var (employees, totalCount) = await _employeeRepository.SearchEmployeesAsync(filter);
+
+            if (employees == null || !employees.Any())
+                return Result<IEnumerable<EmployeeDto>>.Failure("No employees found matching the criteria.");
+
+            var employeeDtos = employees.Select(e => new EmployeeDto
+            {
+                Id = e.Id,
+                FullName = e.FullName.ToString(),
+                JobTitle = e.JobTitle,
+                Salary= e.Salary.Amount,
+                SalaryCurrancy= e.Salary.Currency,
+                Address = e.Address.ToString(),
+                Gender = e.Gender.ToString(),
+                DepartmentName = e.Department?.Name ?? "N/A",
+                EmploymentStatus = e.Status.ToString(),
+            });
+            return Result<IEnumerable<EmployeeDto>>.Success(employeeDtos);
+        }
         public async Task<Employee> GetEmployeeOrThrowAsync(int id)
         {
             var employee = await _unitOfWork.Employees.GetByIdAsync(id);
@@ -212,13 +234,6 @@ namespace HRManagementSystem.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<(IEnumerable<EmployeeDto> Items, int TotalCount)> GetFilteredAsync(EmployeeFilterDto filter)
-        {
-            var (employees, totalCount) = await _unitOfWork.Employees.GetPagedAsync(filter);
-
-            var dtos = _mapper.Map<IEnumerable<EmployeeDto>>(employees);
-
-            return (dtos, totalCount);
-        }
+        
     }
 }

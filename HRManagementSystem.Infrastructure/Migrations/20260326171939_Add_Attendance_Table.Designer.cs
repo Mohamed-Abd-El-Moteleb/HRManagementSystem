@@ -4,6 +4,7 @@ using HRManagementSystem.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HRManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260326171939_Add_Attendance_Table")]
+    partial class Add_Attendance_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,33 +223,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.ToTable("LeaveRequests");
-                });
-
-            modelBuilder.Entity("HRManagementSystem.Domain.Entities.PublicHoliday", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PublicHolidays", (string)null);
                 });
 
             modelBuilder.Entity("HRManagementSystem.Domain.Entities.Attendance", b =>
@@ -512,37 +488,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("HRManagementSystem.Domain.Entities.PublicHoliday", b =>
-                {
-                    b.OwnsOne("HRManagementSystem.Domain.ValueObjects.DateRange", "Period", b1 =>
-                        {
-                            b1.Property<int>("PublicHolidayId")
-                                .HasColumnType("int");
-
-                            b1.Property<DateTime>("EndDate")
-                                .HasColumnType("datetime2")
-                                .HasColumnName("EndDate");
-
-                            b1.Property<DateTime>("StartDate")
-                                .HasColumnType("datetime2")
-                                .HasColumnName("StartDate");
-
-                            b1.HasKey("PublicHolidayId");
-
-                            b1.HasIndex("EndDate");
-
-                            b1.HasIndex("StartDate");
-
-                            b1.ToTable("PublicHolidays");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PublicHolidayId");
-                        });
-
-                    b.Navigation("Period")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("HRManagementSystem.Domain.Entities.Department", b =>
