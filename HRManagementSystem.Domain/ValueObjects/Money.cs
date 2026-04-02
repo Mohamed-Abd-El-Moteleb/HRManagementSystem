@@ -35,13 +35,20 @@ namespace HRManagementSystem.Domain.ValueObjects
             if (Currency != other.Currency)
                 throw new InvalidOperationException("Currencies must match.");
 
-            if (Amount < other.Amount)
-                throw new InvalidOperationException("Resulting amount cannot be negative.");
+            decimal resultAmount = Math.Max(0, Amount - other.Amount);
 
-            return new Money(Amount - other.Amount, Currency);
+            return new Money(resultAmount, Currency);
         }
 
+        public static Money Zero(string currency = "EGP")
+        {
+            return new Money(0, currency);
+        }
 
+        public Money Multiply(decimal factor)
+        {
+            return new Money(Amount * factor, Currency);
+        }
         public override string ToString() => $"{Amount} {Currency}";
     }
 }

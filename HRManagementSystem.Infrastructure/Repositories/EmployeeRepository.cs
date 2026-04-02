@@ -72,11 +72,16 @@ namespace HRManagementSystem.Infrastructure.Repositories
 
         public async Task<Employee?> GetByIdAsync(int id)
         {
-           return await _context.Employees.Include(e=>e.Department).FirstOrDefaultAsync(e=>e.Id==id);
+           return await _context.Employees.Include(e=>e.Department).Include(e=>e.FixedAllowances).FirstOrDefaultAsync(e=>e.Id==id);
         }
         public async Task<IEnumerable<Employee>> GetAllAsync() 
         {
             return await _context.Employees.Include(e=>e.Department).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Employee>> GetAllActiveAsync()
+        {
+            return await _context.Employees.Where(e => e.Status == EmploymentStatus.Active).ToListAsync();
         }
         public async Task<IEnumerable<Employee>> GetByDepartmentIdAsync(int departmentId)
         {

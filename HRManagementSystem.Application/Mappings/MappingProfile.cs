@@ -2,6 +2,7 @@
 using HRManagementSystem.Application.DTOs.Department;
 using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Application.DTOs.PublicHoliday;
+using HRManagementSystem.Application.DTOs.SalarySlip;
 using HRManagementSystem.Domain.Entities;
 using HRManagementSystem.Domain.Enums;
 using HRManagementSystem.Domain.ValueObjects;
@@ -72,6 +73,37 @@ namespace HRManagementSystem.Application.Mappings
                 ForMember(dest=>dest.EndDate,opt=>opt.MapFrom(src=>src.Period.EndDate)).
                 ForMember(dest=>dest.TotalDays,opt=>opt.MapFrom(src=>src.Period.TotalDays))
                .ForMember(dest => dest.Year, opt => opt.MapFrom(src => src.Year));
+
+            //Salary Slip
+            CreateMap<SalarySlip, SalarySlipDto>()
+              .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.FullName))
+              .ForMember(dest => dest.CalculationDate, opt => opt.MapFrom(src => src.CalculationDate))
+
+              .ForMember(dest => dest.BaseSalary, opt => opt.MapFrom(src => src.BaseSalary.Amount))
+              .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.BaseSalary.Currency))
+              .ForMember(dest => dest.TotalAllowances, opt => opt.MapFrom(src =>
+               (src.DetailedAllowances != null && src.BaseSalary != null) ? src.TotalAllowances.Amount : 0))
+              .ForMember(dest => dest.OvertimeAmount, opt => opt.MapFrom(src => src.OvertimeAmount.Amount))
+              .ForMember(dest => dest.HolidayWorkAmount, opt => opt.MapFrom(src => Math.Round(src.HolidayWorkAmount.Amount, 2)))
+              .ForMember(dest => dest.Bonuses, opt => opt.MapFrom(src => src.Bonuses.Amount))
+
+              .ForMember(dest => dest.AbsenceDeduction, opt => opt.MapFrom(src => src.AbsenceDeduction.Amount))
+              .ForMember(dest => dest.LateDeduction, opt => opt.MapFrom(src => src.LateDeduction.Amount))
+              .ForMember(dest => dest.InsuranceDeduction, opt => opt.MapFrom(src => src.InsuranceDeduction.Amount))
+              .ForMember(dest => dest.TaxDeduction, opt => opt.MapFrom(src => src.TaxDeduction.Amount))
+              .ForMember(dest => dest.ManualDeductions, opt => opt.MapFrom(src =>
+                        src.ManualDeductions != null ? src.ManualDeductions.Amount : 0))
+              .ForMember(dest => dest.TotalDeductions, opt => opt.MapFrom(src =>
+                        (src.BaseSalary != null) ? src.TotalDeductions.Amount : 0))
+              .ForMember(dest => dest.GrossSalary, opt => opt.MapFrom(src => Math.Round(src.GrossSalary.Amount, 2)))
+              .ForMember(dest => dest.NetSalary, opt => opt.MapFrom(src =>
+                        (src.BaseSalary != null) ? Math.Round(src.NetSalary.Amount, 2) : 0))
+              .ForMember(dest => dest.Allowances, opt => opt.MapFrom(src => src.DetailedAllowances));
+
+            CreateMap<SalaryAllowance, AllowanceDto>()
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount.Amount))
+                .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Amount.Currency));
+
 
         }
     }

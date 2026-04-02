@@ -26,6 +26,9 @@ namespace HRManagementSystem.Domain.Entities
         public DateTime HireDate { get; private set; }
         public string JobTitle { get; private set; } = "Unknown";
         public Money Salary { get; private set; }
+
+        private readonly List<SalaryAllowance> _fixedAllowances = new(); 
+        public virtual IReadOnlyCollection<SalaryAllowance> FixedAllowances => _fixedAllowances.AsReadOnly(); 
         public EmploymentStatus Status { get; private set; } = EmploymentStatus.Active;
         public JobLevel JobLevel { get; private set; }
         public ContractDetails ContractDetails { get; private set; } 
@@ -138,6 +141,14 @@ namespace HRManagementSystem.Domain.Entities
 
             Salary = newSalary;
         }
+        public void AddFixedAllowance(string name, Money amount)
+        {
+            if (_fixedAllowances.Any(a => a.Name == name))
+                throw new BusinessException($"البدل '{name}' مضاف بالفعل لهذا الموظف.");
+
+            _fixedAllowances.Add(new SalaryAllowance(name, amount,isManual: false));
+        }
+
         public void AdjustSalary(Money amount, bool increase = true)
         {
             if (amount == null)

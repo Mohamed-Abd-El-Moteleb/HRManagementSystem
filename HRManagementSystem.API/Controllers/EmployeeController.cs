@@ -54,6 +54,14 @@ namespace HRManagementSystem.API.Controllers
             value: new { message = "Employee created successfully", data = dto });
         }
 
+        [HttpPost("{empId}/fixed-allowances")]
+        public async Task<IActionResult> AddFixedAllowance(int empId, [FromBody] FixedAllowanceRequest request)
+        {
+            var amount = new Money(request.Amount, request.Currency);
+            await _employeeService.AddPermanentAllowanceAsync(empId, amount, request.Name);
+            return Ok(new { message = "Fixed Allowance added successfully " });
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateEmployeeDto dto)
         {

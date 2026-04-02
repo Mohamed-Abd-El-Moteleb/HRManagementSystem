@@ -4,6 +4,7 @@ using HRManagementSystem.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HRManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260327202721_EditPaySlipToAddManualDeductions")]
+    partial class EditPaySlipToAddManualDeductions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -268,9 +271,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
 
                     b.Property<int>("HolidayWorkDays")
                         .HasColumnType("int");
-
-                    b.Property<double>("HolidayWorkHours")
-                        .HasColumnType("float");
 
                     b.Property<bool>("IsFinalized")
                         .HasColumnType("bit");

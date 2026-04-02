@@ -233,7 +233,16 @@ namespace HRManagementSystem.Application.Services
             employee.AdjustSalary(money,increase);
             await _unitOfWork.SaveChangesAsync();
         }
+        public async Task AddPermanentAllowanceAsync(int employeeId, Money amount, string name)
+        {
+            var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            if (employee == null) throw new NotFoundException("Employee not found");
 
-        
+            employee.AddFixedAllowance(name, amount);
+
+            _employeeRepository.Update(employee);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
     }
 }

@@ -18,6 +18,7 @@ namespace HRManagementSystem.Application.DTOs.Attendance
         public int TotalRemoteWorkDays { get; set; }
         public int TotalBusinessTripDays { get; set; }
         public int TotalPublicHolidayWorkDays { get; set; }
+        public double TotalPublicHolidayWorkHours { get; set; }
         public double TotalWorkingHours { get; set; }
         public double OvertimeHours { get; set; }
 

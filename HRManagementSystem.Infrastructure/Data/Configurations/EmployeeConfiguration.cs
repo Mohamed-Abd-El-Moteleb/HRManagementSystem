@@ -133,9 +133,27 @@ namespace HRManagementSystem.Infrastructure.Data.Configurations
            .IsRequired()
            .HasMaxLength(100);
 
-            // Optional fields
             builder.Property(e => e.ProfileImagePath)
                    .HasMaxLength(255);
+
+
+            builder.OwnsMany(e => e.FixedAllowances, a =>
+            {
+                a.ToTable("EmployeeFixedAllowances"); 
+                a.WithOwner().HasForeignKey("EmployeeId");
+                a.Property<int>("Id");
+                a.HasKey("Id");
+
+                a.Property(x => x.Name).IsRequired().HasMaxLength(100);
+
+                a.OwnsOne(x => x.Amount, money =>
+                {
+                    money.Property(m => m.Amount).HasColumnName("Amount").HasColumnType("decimal(18,2)");
+                    money.Property(m => m.Currency).HasColumnName("Currency").HasMaxLength(3);
+                });
+            });
+
+            builder.Navigation(e => e.FixedAllowances).UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

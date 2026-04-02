@@ -20,6 +20,7 @@ namespace HRManagementSystem.Infrastructure
             services.AddScoped<ILeaveAllocationRepository, LeaveAllocationRepository>();
             services.AddScoped<IAttendanceRepository, AttendanceRepository>();
             services.AddScoped<IPublicHolidayRepository, PublicHolidayRepository>();
+            services.AddScoped<ISalarySlipRepository, SalarySlipRepository>();
 
 
             services.AddScoped<IUnitOfWork, HRManagementSystem.Infrastructure.UnitOfWork.UnitOfWork>();
