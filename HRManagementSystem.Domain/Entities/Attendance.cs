@@ -51,34 +51,47 @@ namespace HRManagementSystem.Domain.Entities
             }
         }
 
-        public void RecordCheckOut(DateTime checkOutTime, TimeSpan shiftEndTime, TimeSpan shiftDuration)
+        public void RecordCheckOut(DateTime checkOutTime, TimeSpan shiftEndTime, TimeSpan shiftDuration, bool isPublicHoliday = false)
         {
             if (CheckIn == null)
                 throw new InvalidOperationException("Cannot record checkout: No check-in record found.");
 
             CheckOut = checkOutTime;
+
+            string dayTypeNote = "";
+            if (isPublicHoliday) 
+            {
+                dayTypeNote = "Worked on Public Holiday";
+            }
+            else if (CheckOut.Value.DayOfWeek == DayOfWeek.Friday || CheckOut.Value.DayOfWeek == DayOfWeek.Saturday)
+            {
+                dayTypeNote = "Worked on Weekend";
+            }
+
             var actualDuration = checkOutTime - CheckIn.Value;
-
-            string baseNotes = string.IsNullOrEmpty(Notes) ? "" : Notes + " | ";
-
             bool wasLate = Status == AttendanceStatus.Late;
             string lateStatus = wasLate ? "Yes" : "No";
+
+            var notesList = new List<string>();
+            if (!string.IsNullOrEmpty(dayTypeNote)) notesList.Add(dayTypeNote);
 
             if (checkOutTime.TimeOfDay < shiftEndTime)
             {
                 Status = AttendanceStatus.HasLeftEarly;
-                Notes = $"{baseNotes}Left early at {checkOutTime.TimeOfDay:hh\\:mm}";
+                notesList.Add($"Left early at {checkOutTime.TimeOfDay:hh\\:mm}");
             }
             else if (actualDuration > shiftDuration)
             {
                 Status = AttendanceStatus.Overtime;
-                Notes = $"{baseNotes}Worked overtime until {checkOutTime.TimeOfDay:hh\\:mm}. (Late arrival: {lateStatus})";
+                notesList.Add($"Worked overtime until {checkOutTime.TimeOfDay:hh\\:mm}. (Late arrival: {lateStatus})");
             }
             else
             {
                 Status = wasLate ? AttendanceStatus.Late : AttendanceStatus.Present;
-                Notes = $"{baseNotes}Checked out at {checkOutTime.TimeOfDay:hh\\:mm}";
+                notesList.Add($"{Status}");
             }
+
+            Notes = string.Join(" | ", notesList);
         }
     }
 

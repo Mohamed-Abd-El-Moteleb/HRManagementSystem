@@ -31,6 +31,9 @@ namespace HRManagementSystem.Application.Interfaces.Services
         Task UpdateAddressAsync(int id, Address address);
         Task UpdateContactInfoAsync(int id, ContactInfo contactInfo);
         Task AdjustSalaryAsync(int id, Money money, bool increase = true);
+
+        Task AddPermanentAllowanceAsync(int employeeId, Money amount, string name);
+
     }
-        
+
 }

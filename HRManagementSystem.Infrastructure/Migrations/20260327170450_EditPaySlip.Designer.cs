@@ -4,6 +4,7 @@ using HRManagementSystem.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HRManagementSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260327170450_EditPaySlip")]
+    partial class EditPaySlip
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -268,9 +271,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
 
                     b.Property<int>("HolidayWorkDays")
                         .HasColumnType("int");
-
-                    b.Property<double>("HolidayWorkHours")
-                        .HasColumnType("float");
 
                     b.Property<bool>("IsFinalized")
                         .HasColumnType("bit");
@@ -858,29 +858,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
                                 .HasForeignKey("SalarySlipId");
                         });
 
-                    b.OwnsOne("HRManagementSystem.Domain.ValueObjects.Money", "ManualDeductions", b1 =>
-                        {
-                            b1.Property<int>("SalarySlipId")
-                                .HasColumnType("int");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("ManualDeductions_Amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasColumnName("ManualDeductions_Currency");
-
-                            b1.HasKey("SalarySlipId");
-
-                            b1.ToTable("SalarySlips");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SalarySlipId");
-                        });
-
                     b.OwnsOne("HRManagementSystem.Domain.ValueObjects.Money", "OvertimeAmount", b1 =>
                         {
                             b1.Property<int>("SalarySlipId")
@@ -947,9 +924,6 @@ namespace HRManagementSystem.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("LateDeduction")
-                        .IsRequired();
-
-                    b.Navigation("ManualDeductions")
                         .IsRequired();
 
                     b.Navigation("OvertimeAmount")

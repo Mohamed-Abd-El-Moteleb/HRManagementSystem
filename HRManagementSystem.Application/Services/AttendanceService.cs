@@ -90,7 +90,9 @@ namespace HRManagementSystem.Application.Services
                 TotalWorkingHours = attendances
                     .Where(a => a.CheckIn.HasValue && a.CheckOut.HasValue)
                     .Sum(a => (a.CheckOut.Value - a.CheckIn.Value).TotalHours),
-
+                TotalPublicHolidayWorkHours = attendances
+                    .Where(a => a.CheckIn.HasValue && a.CheckOut.HasValue && holidayDates.Contains(a.Date.Date))
+                    .Sum(a => (a.CheckOut.Value - a.CheckIn.Value).TotalHours),
                 OvertimeHours = attendances
                     .Where(a => a.Status == AttendanceStatus.Overtime && a.CheckIn.HasValue && a.CheckOut.HasValue)
                     .Sum(a => Math.Max(0, (a.CheckOut.Value - a.CheckIn.Value).TotalMinutes - shiftDurationMinutes)) / 60.0
@@ -141,18 +143,21 @@ namespace HRManagementSystem.Application.Services
         public async Task<Result> CheckOutAsync(int employeeId)
         {
             var employee = await _employeeRepository.GetByIdAsync(employeeId);
+            if (employee == null) return Result.Failure("Employee not found.");
 
-            if (employee == null)
-                return Result.Failure("Employee not found.");
-
-            var attendance = await _attendanceRepository.GetAttendanceByDateAsync(employeeId, DateTime.Now);
+            var now = DateTime.Now;
+            var attendance = await _attendanceRepository.GetAttendanceByDateAsync(employeeId, now.Date);
 
             if (attendance == null)
                 return Result.Failure("No check-in record found for today.");
+
+            var isPublicHoliday = await _publicHolidayService.IsDatePublicHolidayAsync(now.Date);
+
             TimeSpan shiftDuration = _defaultShiftEnd - _defaultShiftStart;
+
             try
             {
-                attendance.RecordCheckOut(DateTime.Now, _defaultShiftEnd, shiftDuration);
+                attendance.RecordCheckOut(now, _defaultShiftEnd, shiftDuration, isPublicHoliday);
 
                 await _unitOfWork.SaveChangesAsync();
                 return Result.Success();
