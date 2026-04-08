@@ -1,3 +1,7 @@
+![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20DDD-blue)
+
 # HR Management System (Web API)
 
 **HR Management System** is a robust, enterprise-grade backend solution built with ASP.NET Core Web API. It is designed using Clean Architecture and Domain-Driven Design (DDD) principles to provide a scalable, maintainable, and highly secure platform for managing organizational hierarchies and personnel.
@@ -15,7 +19,13 @@
 - **Automated Mapping:** Seamless data transformation between Entities and DTOs using AutoMapper.
 - **Comprehensive Employee Management:** Handles complex profiles, profile pictures, and department transitions.
 - **Department Governance:** Secure management of departments with logic to handle "Unassigned" states and manager assignments.
-  
+
+## Security & Identity Architecture
+* **Authentication & Authorization:** Powered by **ASP.NET Core Identity** for enterprise-grade user management.
+* **Role-Based Access Control (RBAC):** Implemented specific access levels for `Admin`, `HR`, `Manager`, and `Employee` roles to safeguard sensitive operations.
+* **Data Ownership Protection:** Integrated logic to ensure data privacy (e.g., employees can only access their own salary slips, while managers access their department data).
+* **Secure Context Handling:** Implemented a decoupled `ICurrentUser` service in the Infrastructure layer to safely retrieve user identity within the Application layer, adhering to Clean Architecture principles.
+
 ## Features
 **Employee Management**
 - Full Lifecycle: Add, edit, and view comprehensive employee profiles. 
@@ -33,10 +43,15 @@
 - Balance Allocation: Dynamic allocation of leave days per year/type (Annual, Sick, Casual) with validation logic to prevent over-requesting.
 - Managerial Oversight: Dedicated endpoints for managers to review and add comments to leave requests.
   
-**Attendance Tracking** (New)
+**Attendance Tracking**
 - Operational Logging: Precise check-in and check-out recording for daily attendance.
 - Automated Status: Logic-driven attendance categorization (Present, Late, Absent, Half-Day).
 - Historical Analytics: API endpoints for department-wide and individual attendance history reports.
+
+**Payroll Management** (New)
+- Payroll Processing: Automated generation of monthly salary slips.
+- Flexible Allowances & Bonuses: Support for fixed permanent allowances and one-time monthly bonuses/deductions.
+- Financial Integrity: Logic to finalize and "freeze" salary slips once processed to prevent retroactive tampering.
 
 ## Technologies Used
 
@@ -57,7 +72,8 @@
  **Prerequisites**:
  - .NET 9.0 SDK or later
  - SQL Server
-   
+ - Note: On the first run, the system automatically seeds the database with default roles (Admin, HR, Manager, Employee) to ensure a smooth setup.
+
 **1. Clone the repository:**
    ```bash
    git clone https://github.com/Mohamed-Abd-El-Moteleb/HRManagementSystem.git
