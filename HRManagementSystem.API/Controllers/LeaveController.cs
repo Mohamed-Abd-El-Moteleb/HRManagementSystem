@@ -2,10 +2,12 @@
 using HRManagementSystem.Application.DTOs.LeaveRequest;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagementSystem.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class LeaveController : ControllerBase
@@ -26,6 +28,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(leave);
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("pending")]
         public async Task<ActionResult<IEnumerable<LeaveRequestDetailsDto>>> GetPendingLeaves()
         {
@@ -54,6 +57,7 @@ namespace HRManagementSystem.API.Controllers
             return CreatedAtAction(nameof(GetLeaveById), new { id = leaveRequestId },leaveRequestId);
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPost("allocate")]
         public async Task<IActionResult> AllocateLeave([FromBody] CreateAllocationDto dto)
         {
@@ -66,6 +70,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Allocation created successfully.");
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpPut("{id}/approve")]
         public async Task<IActionResult> ApproveLeave(int id, [FromBody] UpdateLeaveRequestDto updateLeaveRequestDto)
         {
@@ -73,6 +78,7 @@ namespace HRManagementSystem.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpPut("{id}/reject")]
         public async Task<IActionResult> RejectLeave(int id, [FromBody] UpdateLeaveRequestDto updateLeaveRequestDto)
         {

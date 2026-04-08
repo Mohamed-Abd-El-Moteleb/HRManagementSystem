@@ -37,6 +37,8 @@ namespace HRManagementSystem.Domain.Entities
         // Relations
         public int DepartmentId { get; private set; }
         public Department? Department { get; private set; }
+        public string? UserId { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
         // Extras
         public string? ProfileImagePath { get; private set; }

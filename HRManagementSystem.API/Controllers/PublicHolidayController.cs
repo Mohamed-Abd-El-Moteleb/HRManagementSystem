@@ -1,14 +1,17 @@
 ﻿using HRManagementSystem.Application.DTOs.PublicHoliday;
 using HRManagementSystem.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagementSystem.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PublicHolidayController : ControllerBase
     {
         private readonly IPublicHolidayService _publicHolidayService;
+
 
         public PublicHolidayController(IPublicHolidayService service)
         {
@@ -30,6 +33,7 @@ namespace HRManagementSystem.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<ActionResult<int>> Create(CreatePublicHolidayDto dto)
         {
             var id = await _publicHolidayService.CreateAsync(dto);
@@ -38,7 +42,9 @@ namespace HRManagementSystem.API.Controllers
                 value: new { message = "Public Holiday created successfully", data = dto });
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, UpdatePublicHolidayDto dto)
         {
             await _publicHolidayService.UpdateAsync(id, dto);
@@ -46,6 +52,7 @@ namespace HRManagementSystem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Delete(int id)
         {
             await _publicHolidayService.DeleteAsync(id);
@@ -80,6 +87,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(count);
         }
 
+
         [HttpGet("check-date")]
         public async Task<ActionResult<bool>> IsHoliday([FromQuery] DateTime date)
         {
@@ -87,6 +95,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("check-range")]
         public async Task<ActionResult<bool>> HasHolidayInRange([FromQuery] DateTime start, [FromQuery] DateTime end)
         {

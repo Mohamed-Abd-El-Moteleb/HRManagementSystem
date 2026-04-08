@@ -1,9 +1,11 @@
 ﻿using HRManagementSystem.Application.DTOs.Attendance;
 using HRManagementSystem.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagementSystem.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AttendanceController : ControllerBase
@@ -15,6 +17,7 @@ namespace HRManagementSystem.API.Controllers
             _attendanceService = attendanceService;
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("search")]
         public async Task<IActionResult> SearchAttendance([FromQuery] AttendanceFilterRequest filter)
         {
@@ -44,6 +47,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Checked out successfully.");
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("stats/{employeeId}/{month}/{year}")]
         public async Task<IActionResult> GetMonthlyStats(int employeeId, int month, int year)
         {
@@ -55,6 +59,8 @@ namespace HRManagementSystem.API.Controllers
             return Ok(result.Value); 
         }
 
+
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("history/{employeeId}")]
         public async Task<IActionResult> GetHistory(int employeeId, [FromQuery] DateTime start, [FromQuery] DateTime end)
         {
@@ -62,6 +68,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(history);
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPut("adjust/{attendanceId}")]
         public async Task<IActionResult> AdjustAttendance(int attendanceId, [FromBody] AdjustmentRequest request)
         {
@@ -70,6 +77,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Adjustment applied successfully.");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPost("bulk-update")]
         public async Task<IActionResult> BulkUpdate([FromBody] BulkAdjustmentRequest request)
         {
@@ -78,6 +86,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Bulk update applied successfully.");
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("daily-report/{date}")]
         public async Task<IActionResult> GetDailyReport(DateTime date)
         {

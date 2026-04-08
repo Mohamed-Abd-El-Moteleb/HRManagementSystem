@@ -1,6 +1,9 @@
 ﻿using HRManagementSystem.Application.Interfaces.Repositories;
+using HRManagementSystem.Domain.Entities;
+using HRManagementSystem.Infrastructure.Data.Context;
 using HRManagementSystem.Infrastructure.Repositories;
 using HRManagementSystem.Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -22,6 +25,9 @@ namespace HRManagementSystem.Infrastructure
             services.AddScoped<IPublicHolidayRepository, PublicHolidayRepository>();
             services.AddScoped<ISalarySlipRepository, SalarySlipRepository>();
 
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
             services.AddScoped<IUnitOfWork, HRManagementSystem.Infrastructure.UnitOfWork.UnitOfWork>();
 

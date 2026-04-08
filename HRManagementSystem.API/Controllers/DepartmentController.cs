@@ -2,10 +2,12 @@
 using HRManagementSystem.Application.DTOs.Employee;
 using HRManagementSystem.Application.Interfaces.Services;
 using HRManagementSystem.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagementSystem.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DepartmentController : ControllerBase
@@ -30,6 +32,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(department);
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("{id}/details")]
         public async Task<IActionResult> GetByIdWithImportantDetails(int id)
         {
@@ -43,6 +46,8 @@ namespace HRManagementSystem.API.Controllers
             var departments = await _departmentService.GetEmployeesByDepartmentIdAsync(id);
             return Ok(departments);
         }
+
+        [Authorize(Roles = "Admin,HR,Manager")]
         [HttpGet("{id}/stats")]
         public async Task<IActionResult> GetDepartmentStats(int id)
         {
@@ -50,6 +55,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok(department);
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateDepartmentDto dto)
         {
@@ -60,6 +66,7 @@ namespace HRManagementSystem.API.Controllers
             
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateDepartmentDto dto)
         {
@@ -67,6 +74,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Department updated successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/assign-manager/{managerId}")]
         public async Task<IActionResult> AssignManager(int id, int managerId)
         {
@@ -74,6 +82,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Manager Assigned successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/remove-manager")]
         public async Task<IActionResult> RemoveManager(int id)
         {
@@ -81,6 +90,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Manager Remove successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/add-employee/{employeeId}")]
         public async Task<IActionResult> AddEmployeeToDepartment(int id, int employeeId)
         {
@@ -88,6 +98,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Employee Added successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/remove-employee/{employeeId}")]
         public async Task<IActionResult> RemoveEmployeeFromDepartment(int id, int employeeId)
         {
@@ -95,12 +106,14 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Employee Removed successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/activate-department")]
         public async Task<IActionResult> ActivateDepartment(int id)
         {
             await _departmentService.ActivateDepartmentAsync(id);
             return Ok("Department Activated successfully");
         }
+        [Authorize(Roles = "Admin,HR")]
         [HttpPatch("{id}/deactivate-department")]
         public async Task<IActionResult> DeactivateDepartment(int id)
         {
@@ -108,6 +121,7 @@ namespace HRManagementSystem.API.Controllers
             return Ok("Department Deactivated successfully");
         }
 
+        [Authorize(Roles = "Admin,HR")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
